@@ -66,8 +66,17 @@ app.post('/start-bot', (req, res) => {
     undefined,
     {
       headless: true,
-      useChrome: false,
-      browserArgs: ['--no-sandbox'],
+      useChrome: true, // Usar Chrome/Chromium
+      browserArgs: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process', // <- isso não funciona no Windows
+        '--disable-gpu'
+      ]
     }
   )
     .then((client) => {
@@ -103,9 +112,9 @@ const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log('Routes are configured as follows:');
   app._router.stack.forEach((middleware) => {
-    if (middleware.route) { // Routes registered directly on the app
+    if (middleware.route) { // Routes registered diretamente no app
       console.log(middleware.route);
-    } else if (middleware.name === 'router') { // Router middleware 
+    } else if (middleware.name === 'router') { // Middleware de roteador
       middleware.handle.stack.forEach((handler) => {
         if (handler.route) {
           console.log(handler.route);
