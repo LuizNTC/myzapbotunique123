@@ -2,6 +2,7 @@ const express = require('express');
 const { create } = require('venom-bot');
 const path = require('path');
 const WebSocket = require('ws');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
