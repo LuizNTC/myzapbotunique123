@@ -1,0 +1,5 @@
+[0728/003347.004:INFO:CONSOLE(133)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v3/yC/r/UdBDh7rDEG_.js?_nc_x=Ij3Wp8lg5Kz (133)
+[0728/003350.013:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'battery'.", source:  (0)
+[0728/003350.013:INFO:CONSOLE(0)] "Error with Permissions-Policy header: Unrecognized feature: 'usb-unrestricted'.", source:  (0)
+[0728/003350.372:INFO:CONSOLE(1)] "Uncaught (in promise) TypeError: Cannot convert undefined or null to object", source: pptr:evaluate;Whatsapp.initService%20(C%3A%5CUsers%5CGu_fe%5COneDrive%5C%C3%81rea%20de%20Trabalho%5Cmy-whatsapp-bot%5Cnode_modules%5Cvenom-bot%5Cdist%5Capi%5Cwhatsapp.js%3A80%3A29) (1)
+[0728/003351.576:INFO:CONSOLE(133)] "Event handler of 'x-storagemutated-1' event must be added on the initial evaluation of worker script.", source: https://static.whatsapp.net/rsrc.php/v3/yC/r/UdBDh7rDEG_.js?_nc_x=Ij3Wp8lg5Kz (133)

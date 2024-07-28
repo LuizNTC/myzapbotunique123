@@ -1,2 +1,3 @@
-2024/07/27-23:18:01.436 3ee8 Creating DB C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_general\Default\shared_proto_db since it was missing.
-2024/07/27-23:18:01.465 3ee8 Reusing MANIFEST C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_general\Default\shared_proto_db/MANIFEST-000001
+2024/07/28-00:33:46.002 25a0 Reusing MANIFEST C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_general\Default\shared_proto_db/MANIFEST-000001
+2024/07/28-00:33:46.003 25a0 Recovering log #3
+2024/07/28-00:33:46.003 25a0 Reusing old log C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_general\Default\shared_proto_db/000003.log 
