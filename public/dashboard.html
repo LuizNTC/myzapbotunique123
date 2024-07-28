@@ -185,10 +185,11 @@
     <div id="qr-code-container">
       <img id="qr-code" src="" alt="QR Code" style="display: none;">
     </div>
+    <div id="status" class="mt-4"></div>
   </div>
   <!--Container Main end-->
 
-  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
@@ -225,21 +226,26 @@
       if (data.status === 'qr_code') {
         document.getElementById('qr-code').src = data.data;
         document.getElementById('qr-code').style.display = 'block';
+        document.getElementById('status').textContent = 'QR code generated';
       } else if (data.status === 'connected') {
         alert('WhatsApp connected');
+        document.getElementById('status').textContent = 'WhatsApp connected';
       }
     };
 
     document.getElementById('startBot').addEventListener('click', function() {
+      document.getElementById('status').textContent = 'Creating QR code...';
       fetch('/start-bot', {
         method: 'POST'
       })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert('Bot started successfully');
+          alert('Bot iniciado');
+          document.getElementById('status').textContent = 'Bot iniciado';
         } else {
           alert('Failed to start bot');
+          document.getElementById('status').textContent = 'Failed to start bot';
         }
       });
     });

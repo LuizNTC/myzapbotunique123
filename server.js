@@ -1,41 +1,21 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
-const fs = require('fs');
-const WebSocket = require('ws');
 const { create } = require('venom-bot');
+const path = require('path');
+const WebSocket = require('ws');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+let clientInstance;
+let wss;
 
-app.use(bodyParser.json());
+let users = []; // Simulação de banco de dados de usuários
+
 app.use(express.static(path.join(__dirname, 'public')));
-
-const users = [];
-
-// Rota de registro
-app.post('/register', (req, res) => {
-  const { username, password } = req.body;
-  if (username && password) {
-    users.push({ username, password });
-    res.status(201).json({ success: true });
-  } else {
-    res.status(400).json({ success: false, message: 'Username and password are required' });
-  }
-});
-
-// Rota de login
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    res.status(200).json({ success: true });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-});
+app.use(express.json()); // Middleware para JSON
 
 app.post('/start-bot', (req, res) => {
+  console.log('Received request to start bot');
   cleanSession();
   create(
     'session_name',
@@ -86,12 +66,39 @@ const cleanSession = () => {
   }
 };
 
+app.post('/register', (req, res) => {
+  console.log('Received request to register:', req.body);
+  const { username, password } = req.body;
+  if (username && password) {
+    users.push({ username, password });
+    console.log('User registered:', username);
+    res.status(201).json({ success: true });
+  } else {
+    console.log('Registration failed: Username and password are required');
+    res.status(400).json({ success: false, message: 'Username and password are required' });
+  }
+});
+
+app.post('/login', (req, res) => {
+  console.log('Received request to login:', req.body);
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    console.log('Login successful for user:', username);
+    res.status(200).json({ success: true });
+  } else {
+    console.log('Login failed: Invalid credentials');
+    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+});
+
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-const wss = new WebSocket.Server({ server });
+wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ status: 'connected_to_server' }));
+  console.log('WebSocket client connected');
 });
