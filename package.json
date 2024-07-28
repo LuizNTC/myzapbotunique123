@@ -1,9 +1,9 @@
 {
   "name": "greenplay",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "botServer.js",  
   "scripts": {
-    "start": "node server.js",
+    "start": "node botServer.js",  
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
