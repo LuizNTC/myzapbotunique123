@@ -1,1 +1,2 @@
-web: node botserver.js
+web: node server.js
+bot: node botserver.js

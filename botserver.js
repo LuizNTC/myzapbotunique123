@@ -5,7 +5,7 @@ const WebSocket = require('ws');
 const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001; // Usando uma porta diferente para o botserver
 let clientInstance;
 let wss;
 
@@ -30,8 +30,17 @@ app.post('/start-bot', (req, res) => {
     undefined,
     {
       headless: true,
-      useChrome: false,
-      browserArgs: ['--no-sandbox'],
+      useChrome: true,
+      browserArgs: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process', // <- isso não funciona no Windows
+        '--disable-gpu'
+      ]
     }
   )
     .then((client) => {
@@ -64,7 +73,7 @@ const cleanSession = () => {
 };
 
 const server = app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Bot Server is running on http://localhost:${PORT}`);
 });
 
 wss = new WebSocket.Server({ server });
