@@ -1,9 +1,9 @@
 {
   "name": "greenplay",
   "version": "1.0.0",
-  "main": "botServer.js",
+  "main": "botserver.js",
   "scripts": {
-    "start": "node botServer.js",
+    "start": "node botserver.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,8 +19,7 @@
     "venom-bot": "^5.1.0",
     "ws": "^8.18.0"
   },
-    "engines": {
-      "node": "20.x"
-    }
-    
+  "engines": {
+    "node": "20.x"
+  }
 }
