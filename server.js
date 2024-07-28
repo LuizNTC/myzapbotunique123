@@ -11,8 +11,41 @@ let wss;
 
 let users = []; // Simulação de banco de dados de usuários
 
+console.log('Initializing server...');
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); // Middleware para JSON
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  console.log('Route / accessed');
+});
+
+app.post('/register', (req, res) => {
+  console.log('Received request to register:', req.body);
+  const { username, password } = req.body;
+  if (username && password) {
+    users.push({ username, password });
+    console.log('User registered:', username);
+    res.status(201).json({ success: true });
+  } else {
+    console.log('Registration failed: Username and password are required');
+    res.status(400).json({ success: false, message: 'Username and password are required' });
+  }
+});
+
+app.post('/login', (req, res) => {
+  console.log('Received request to login:', req.body);
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    console.log('Login successful for user:', username);
+    res.status(200).json({ success: true });
+  } else {
+    console.log('Login failed: Invalid credentials');
+    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  }
+});
 
 app.post('/start-bot', (req, res) => {
   console.log('Received request to start bot');
@@ -66,34 +99,20 @@ const cleanSession = () => {
   }
 };
 
-app.post('/register', (req, res) => {
-  console.log('Received request to register:', req.body);
-  const { username, password } = req.body;
-  if (username && password) {
-    users.push({ username, password });
-    console.log('User registered:', username);
-    res.status(201).json({ success: true });
-  } else {
-    console.log('Registration failed: Username and password are required');
-    res.status(400).json({ success: false, message: 'Username and password are required' });
-  }
-});
-
-app.post('/login', (req, res) => {
-  console.log('Received request to login:', req.body);
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    console.log('Login successful for user:', username);
-    res.status(200).json({ success: true });
-  } else {
-    console.log('Login failed: Invalid credentials');
-    res.status(401).json({ success: false, message: 'Invalid credentials' });
-  }
-});
-
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  console.log('Routes are configured as follows:');
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) { // Routes registered directly on the app
+      console.log(middleware.route);
+    } else if (middleware.name === 'router') { // Router middleware 
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          console.log(handler.route);
+        }
+      });
+    }
+  });
 });
 
 wss = new WebSocket.Server({ server });
