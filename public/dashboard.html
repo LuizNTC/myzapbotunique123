@@ -105,7 +105,7 @@
       transition: .3s;
     }
     .nav_link:hover {
-      color: var(--white-color);
+      color: var (--white-color);
     }
     .nav_icon {
       font-size: 1.25rem;
@@ -185,7 +185,6 @@
     <div id="qr-code-container">
       <img id="qr-code" src="" alt="QR Code" style="display: none;">
     </div>
-    <div id="status" class="mt-4"></div>
   </div>
   <!--Container Main end-->
 
@@ -223,30 +222,31 @@
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log('WebSocket message received:', data);
       if (data.status === 'qr_code') {
         document.getElementById('qr-code').src = data.data;
         document.getElementById('qr-code').style.display = 'block';
-        document.getElementById('status').textContent = 'QR code generated';
       } else if (data.status === 'connected') {
         alert('WhatsApp connected');
-        document.getElementById('status').textContent = 'WhatsApp connected';
       }
     };
 
     document.getElementById('startBot').addEventListener('click', function() {
-      document.getElementById('status').textContent = 'Creating QR code...';
+      console.log('Start bot button clicked');
       fetch('/start-bot', {
         method: 'POST'
       })
       .then(response => response.json())
       .then(data => {
+        console.log('Response from server:', data);
         if (data.success) {
-          alert('Bot iniciado');
-          document.getElementById('status').textContent = 'Bot iniciado';
+          alert('Bot started successfully');
         } else {
           alert('Failed to start bot');
-          document.getElementById('status').textContent = 'Failed to start bot';
         }
+      })
+      .catch(error => {
+        console.error('Error starting bot:', error);
       });
     });
   </script>
