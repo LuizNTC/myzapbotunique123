@@ -105,7 +105,7 @@
       transition: .3s;
     }
     .nav_link:hover {
-      color: var (--white-color);
+      color: var(--white-color);
     }
     .nav_icon {
       font-size: 1.25rem;
@@ -185,6 +185,7 @@
     <div id="qr-code-container">
       <img id="qr-code" src="" alt="QR Code" style="display: none;">
     </div>
+    <div id="status"></div> <!-- Adicionado para mostrar status -->
   </div>
   <!--Container Main end-->
 
@@ -218,36 +219,34 @@
       linkColor.forEach(l => l.addEventListener('click', colorLink))
     });
 
-    const ws = new WebSocket(`ws://${location.host}`);
+    document.getElementById("startBot").addEventListener("click", function() {
+      const statusElement = document.getElementById("status");
+      statusElement.innerText = "Starting bot...";
+      fetch('/start-bot', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            statusElement.innerText = "Bot started successfully. Waiting for QR Code...";
+          } else {
+            statusElement.innerText = "Failed to start bot: " + data.message;
+          }
+        })
+        .catch(error => {
+          statusElement.innerText = "Error: " + error.message;
+        });
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log('WebSocket message received:', data);
-      if (data.status === 'qr_code') {
-        document.getElementById('qr-code').src = data.data;
-        document.getElementById('qr-code').style.display = 'block';
-      } else if (data.status === 'connected') {
-        alert('WhatsApp connected');
-      }
-    };
-
-    document.getElementById('startBot').addEventListener('click', function() {
-      console.log('Start bot button clicked');
-      fetch('/start-bot', {
-        method: 'POST'
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Response from server:', data);
-        if (data.success) {
-          alert('Bot started successfully');
-        } else {
-          alert('Failed to start bot');
+      const ws = new WebSocket("wss://" + window.location.host);
+      ws.onmessage = function(event) {
+        const message = JSON.parse(event.data);
+        if (message.status === 'qr_code') {
+          document.getElementById("qr-code").src = message.data;
+          document.getElementById("qr-code").style.display = "block";
+          statusElement.innerText = "QR Code generated. Scan it with your WhatsApp.";
+        } else if (message.status === 'connected') {
+          statusElement.innerText = "WhatsApp connected!";
+          document.getElementById("qr-code").style.display = "none";
         }
-      })
-      .catch(error => {
-        console.error('Error starting bot:', error);
-      });
+      };
     });
   </script>
 </body>

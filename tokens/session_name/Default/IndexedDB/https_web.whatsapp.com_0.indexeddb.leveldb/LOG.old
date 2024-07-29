@@ -1,14 +1,5 @@
-2024/07/28-21:18:25.884 4914 Reusing MANIFEST C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2024/07/28-21:18:25.884 4914 Recovering log #211
-2024/07/28-21:18:25.885 4914 Reusing old log C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000211.log 
-2024/07/28-21:18:25.886 4914 Delete type=2 #210
-2024/07/28-21:18:26.559 1e08 Level-0 table #216: started
-2024/07/28-21:18:26.563 1e08 Level-0 table #216: 23949 bytes OK
-2024/07/28-21:18:26.565 1e08 Delete type=0 #211
-2024/07/28-21:18:26.565 4914 Manual compaction at level-0 from '\x00S\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00T\x00\x00\x00' @ 0 : 0; will stop at '\x00S\x0a\x02\x03\x00\x00\x00\x00\x00\x00\xf0?' @ 40898 : 1
-2024/07/28-21:18:26.566 4914 Compacting 1@0 + 1@1 files
-2024/07/28-21:18:26.571 4914 Generated table #217@0: 6996 keys, 59757 bytes
-2024/07/28-21:18:26.571 4914 Compacted 1@0 + 1@1 files => 59757 bytes
-2024/07/28-21:18:26.572 4914 compacted to: files[ 0 1 1 0 0 0 0 ]
-2024/07/28-21:18:26.573 4914 Delete type=2 #216
-2024/07/28-21:18:26.573 4914 Manual compaction at level-0 from '\x00S\x0a\x02\x03\x00\x00\x00\x00\x00\x00\xf0?' @ 40898 : 1 .. '\x00T\x00\x00\x00' @ 0 : 0; will stop at (end)
+2024/07/28-21:51:36.107 16d0 Reusing MANIFEST C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2024/07/28-21:51:36.107 16d0 Recovering log #219
+2024/07/28-21:51:36.108 16d0 Reusing old log C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000219.log 
+2024/07/28-21:51:36.109 16d0 Delete type=2 #217
+2024/07/28-21:51:39.574 16d0 Manual compaction at level-0 from '\x00U\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00V\x00\x00\x00' @ 0 : 0; will stop at (end)
