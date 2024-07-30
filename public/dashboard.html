@@ -130,6 +130,11 @@
     .height-100 {
       height: 100vh;
     }
+    #qr-code {
+      width: 300px;
+      height: 300px;
+      margin-top: 20px; /* Adicionado para dar espaçamento ao QR Code */
+    }
     @media screen and (min-width: 768px) {
       body {
         margin: calc(var(--header-height) + 1rem) 0 0 0;
@@ -157,6 +162,17 @@
         padding-left: calc(var(--nav-width) + 188px);
       }
     }
+    @media screen and (max-width: 768px) {
+      .l-navbar {
+        left: -100%;
+      }
+      .show {
+        left: 0;
+      }
+      .body-pd {
+        padding-left: 1rem;
+      }
+    }
   </style>
 </head>
 <body id="body-pd" class="body-pd">
@@ -178,76 +194,84 @@
       <a href="index.html" class="nav_link"> <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">SignOut</span> </a>
     </nav>
   </div>
-  <!--Container Main start-->
+  <!--exibição qr code-->
   <div class="height-100 bg-light">
     <h4>Main Components</h4>
-    <button id="startBot" class="btn btn-success btn-block mt-4">Start Bot</button>
+    <button id="start-bot" class="btn btn-success btn-block mt-4">Start Bot</button>
     <div id="qr-code-container">
       <img id="qr-code" src="" alt="QR Code" style="display: none;">
     </div>
-    <div id="status"></div> <!-- Adicionado para mostrar status -->
+    <div id="status">Waiting to start...</div> <!-- Adicionado para mostrar status -->
   </div>
   <!--Container Main end-->
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+ 
   <script>
+    // Adicionando função de animação do menu lateral
     document.addEventListener("DOMContentLoaded", function(event) {
       const showNavbar = (toggleId, navId, bodyId, headerId) => {
         const toggle = document.getElementById(toggleId),
               nav = document.getElementById(navId),
               bodypd = document.getElementById(bodyId),
-              headerpd = document.getElementById(headerId)
+              headerpd = document.getElementById(headerId);
         if (toggle && nav && bodypd && headerpd) {
           toggle.addEventListener('click', () => {
-            nav.classList.toggle('show')
-            toggle.classList.toggle('bx-x')
-            bodypd.classList.toggle('body-pd')
-            headerpd.classList.toggle('body-pd')
-          })
-        }
-      }
-      showNavbar('header-toggle', 'nav-bar', 'body-pd', 'header')
-      const linkColor = document.querySelectorAll('.nav_link')
-      function colorLink() {
-        if (linkColor) {
-          linkColor.forEach(l => l.classList.remove('active'))
-          this.classList.add('active')
-        }
-      }
-      linkColor.forEach(l => l.addEventListener('click', colorLink))
-    });
-
-    document.getElementById("startBot").addEventListener("click", function() {
-      const statusElement = document.getElementById("status");
-      statusElement.innerText = "Starting bot...";
-      fetch('/start-bot', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            statusElement.innerText = "Bot started successfully. Waiting for QR Code...";
-          } else {
-            statusElement.innerText = "Failed to start bot: " + data.message;
-          }
-        })
-        .catch(error => {
-          statusElement.innerText = "Error: " + error.message;
-        });
-
-      const ws = new WebSocket("wss://" + window.location.host);
-      ws.onmessage = function(event) {
-        const message = JSON.parse(event.data);
-        if (message.status === 'qr_code') {
-          document.getElementById("qr-code").src = message.data;
-          document.getElementById("qr-code").style.display = "block";
-          statusElement.innerText = "QR Code generated. Scan it with your WhatsApp.";
-        } else if (message.status === 'connected') {
-          statusElement.innerText = "WhatsApp connected!";
-          document.getElementById("qr-code").style.display = "none";
+            nav.classList.toggle('show');
+            toggle.classList.toggle('bx-x');
+            bodypd.classList.toggle('body-pd');
+            headerpd.classList.toggle('body-pd');
+          });
         }
       };
+      showNavbar('header-toggle', 'nav-bar', 'body-pd', 'header');
+      const linkColor = document.querySelectorAll('.nav_link');
+      function colorLink() {
+        if (linkColor) {
+          linkColor.forEach(l => l.classList.remove('active'));
+          this.classList.add('active');
+        }
+      }
+      linkColor.forEach(l => l.addEventListener('click', colorLink));
     });
+
+    // Código QR e WebSocket
+    const startBotButton = document.getElementById('start-bot');
+    const statusElement = document.getElementById('status');
+    const qrCodeImage = document.getElementById('qr-code');
+
+    startBotButton.addEventListener('click', () => {
+      statusElement.textContent = 'Bot started successfully. Waiting for QR Code...';
+
+      fetch('/start-bot', {
+        method: 'POST'
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('Bot started');
+          } else {
+            console.error('Failed to start bot:', data.message);
+            statusElement.textContent = 'Failed to start bot';
+          }
+        });
+    });
+
+    const ws = new WebSocket(`ws://${window.location.host}`);
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+
+      if (message.status === 'qr_code') {
+        qrCodeImage.src = message.data;
+        qrCodeImage.style.display = 'block';
+        statusElement.textContent = 'Scan the QR Code with your WhatsApp';
+      } else if (message.status === 'connected') {
+        statusElement.textContent = 'WhatsApp connected';
+        qrCodeImage.style.display = 'none';
+      }
+    };
   </script>
 </body>
 </html>

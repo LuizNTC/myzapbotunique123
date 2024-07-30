@@ -1,3 +1,2 @@
-2024/07/28-21:56:04.480 1724 Reusing MANIFEST C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\shared_proto_db\metadata/MANIFEST-000001
-2024/07/28-21:56:04.480 1724 Recovering log #3
-2024/07/28-21:56:04.481 1724 Reusing old log C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\shared_proto_db\metadata/000003.log 
+2024/07/30-09:05:54.454 2250 Creating DB C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\shared_proto_db\metadata since it was missing.
+2024/07/30-09:05:54.462 2250 Reusing MANIFEST C:\Users\Gu_fe\OneDrive\Área de Trabalho\my-whatsapp-bot\tokens\session_name\Default\shared_proto_db\metadata/MANIFEST-000001
