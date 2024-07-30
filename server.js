@@ -33,6 +33,7 @@ app.use(
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
+        "script-src": ["'self'", "'unsafe-inline'", "https://stackpath.bootstrapcdn.com", "https://cdnjs.cloudflare.com"],
         "img-src": ["'self'", "data:", "https:"],
       },
     },
