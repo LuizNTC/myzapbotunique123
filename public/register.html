@@ -48,7 +48,12 @@
         body: JSON.stringify({ username, name, phone, email, password })
       });
       const result = await response.json();
-      document.getElementById('registerResult').textContent = result.success ? 'Registration successful!' : 'Registration failed!';
+      const registerResult = document.getElementById('registerResult');
+      if (result.success) {
+        registerResult.innerHTML = 'Registration successful! <a href="index.html" class="btn btn-success">Login</a>';
+      } else {
+        registerResult.textContent = 'Registration failed!';
+      }
     });
   </script>
 </body>

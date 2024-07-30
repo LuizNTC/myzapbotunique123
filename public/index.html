@@ -11,32 +11,35 @@
     <h2>Login</h2>
     <form id="loginForm">
       <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" class="form-control" id="email" required>
+        <label for="loginEmail">Email:</label>
+        <input type="email" class="form-control" id="loginEmail" required>
       </div>
       <div class="form-group">
-        <label for="password">Password:</label>
-        <input type="password" class="form-control" id="password" required>
+        <label for="loginPassword">Password:</label>
+        <input type="password" class="form-control" id="loginPassword" required>
       </div>
       <button type="submit" class="btn btn-primary">Login</button>
     </form>
     <div id="loginResult"></div>
-    <a href="register.html">Register</a>
   </div>
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
       const response = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
       const result = await response.json();
-      document.getElementById('loginResult').textContent = result.success ? 'Login successful!' : 'Login failed!';
+      const loginResult = document.getElementById('loginResult');
       if (result.success) {
-        window.location.href = '/dashboard.html'; // Redireciona para o dashboard após login bem-sucedido
+        localStorage.setItem('userId', result.userId); // Salvando userId no localStorage
+        loginResult.textContent = 'Login successful!';
+        window.location.href = 'dashboard.html'; // Redirecionar para o dashboard
+      } else {
+        loginResult.textContent = 'Invalid credentials!';
       }
     });
   </script>
