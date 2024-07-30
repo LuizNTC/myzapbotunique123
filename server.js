@@ -6,8 +6,7 @@ const fs = require('fs');
 const axios = require('axios');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
-const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
+const helmet = require('helmet'); // Importando Helmet
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,23 +20,24 @@ const pool = new Pool({
   }
 });
 
-app.use(session({
-  store: new pgSession({
-    pool: pool,
-    tableName: 'user_sessions'
-  }),
-  secret: 'mySecret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
-}));
-
 const apiKey = "SUA_API_KEY"; // Adicione sua chave de API aqui
 const requestQueue = [];
 let isProcessingQueue = false;
 const sessions = {};
 
 console.log('Initializing server...');
+
+// Use Helmet para definir cabeçalhos de segurança, incluindo CSP
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: true,
+      directives: {
+        "img-src": ["'self'", "data:", "https:"],
+      },
+    },
+  })
+);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); // Middleware para JSON
@@ -54,7 +54,7 @@ app.post('/register', async (req, res) => {
     const client = await pool.connect();
     try {
       await client.query(
-        'INSERT INTO users (username, phone, email, password) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO users (name, phone, email, password) VALUES ($1, $2, $3, $4)',
         [name, phone, email, hashedPassword]
       );
       res.status(201).json({ success: true });
@@ -76,8 +76,7 @@ app.post('/login', async (req, res) => {
     const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
-      req.session.userId = user.id;
-      res.status(200).json({ success: true });
+      res.status(200).json({ success: true, userId: user.id });
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
@@ -90,11 +89,7 @@ app.post('/login', async (req, res) => {
 });
 
 app.post('/set-prompt', async (req, res) => {
-  const { prompt } = req.body;
-  const userId = req.session.userId;
-  if (!userId) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
+  const { userId, prompt } = req.body;
   const client = await pool.connect();
   try {
     await client.query('UPDATE users SET prompt = $1 WHERE id = $2', [prompt, userId]);
@@ -109,10 +104,7 @@ app.post('/set-prompt', async (req, res) => {
 
 app.post('/start-bot', (req, res) => {
   console.log('Received request to start bot');
-  const userId = req.session.userId;
-  if (!userId) {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
+  const { userId } = req.body;
   startBot(userId);
   res.json({ success: true });
 });
