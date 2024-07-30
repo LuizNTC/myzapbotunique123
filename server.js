@@ -49,14 +49,14 @@ app.get('/', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-  const { name, phone, email, password } = req.body;
-  if (name && phone && email && password) {
+  const { username, name, phone, email, password } = req.body;
+  if (username && name && phone && email && password) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
     try {
       await client.query(
-        'INSERT INTO users (name, phone, email, password) VALUES ($1, $2, $3, $4)',
-        [name, phone, email, hashedPassword]
+        'INSERT INTO users (username, name, phone, email, password) VALUES ($1, $2, $3, $4, $5)',
+        [username, name, phone, email, hashedPassword]
       );
       res.status(201).json({ success: true });
     } catch (err) {

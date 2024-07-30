@@ -9,58 +9,46 @@
 <body>
   <div class="container">
     <h2>Register</h2>
-    <form id="register-form">
+    <form id="registerForm">
       <div class="form-group">
-        <label for="name">Name</label>
+        <label for="username">Username:</label>
+        <input type="text" class="form-control" id="username" required>
+      </div>
+      <div class="form-group">
+        <label for="name">Name:</label>
         <input type="text" class="form-control" id="name" required>
       </div>
       <div class="form-group">
-        <label for="phone">Phone</label>
+        <label for="phone">Phone:</label>
         <input type="text" class="form-control" id="phone" required>
       </div>
       <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" class="form-control" id="email" required>
+        <label for="registerEmail">Email:</label>
+        <input type="email" class="form-control" id="registerEmail" required>
       </div>
       <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" class="form-control" id="password" required>
+        <label for="registerPassword">Password:</label>
+        <input type="password" class="form-control" id="registerPassword" required>
       </div>
       <button type="submit" class="btn btn-primary">Register</button>
     </form>
-    <div id="register-status"></div>
+    <div id="registerResult"></div>
   </div>
-
   <script>
-    document.getElementById('register-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-      
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
       const name = document.getElementById('name').value;
       const phone = document.getElementById('phone').value;
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      fetch('/register', {
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const response = await fetch('/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, phone, email, password })
-      })
-      .then(response => response.json())
-      .then(data => {
-        const registerStatus = document.getElementById('register-status');
-        if (data.success) {
-          registerStatus.textContent = 'User registered successfully';
-          registerStatus.classList.add('text-success');
-        } else {
-          registerStatus.textContent = 'Registration failed: ' + data.message;
-          registerStatus.classList.add('text-danger');
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, name, phone, email, password })
       });
+      const result = await response.json();
+      document.getElementById('registerResult').textContent = result.success ? 'Registration successful!' : 'Registration failed!';
     });
   </script>
 </body>
