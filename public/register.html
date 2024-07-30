@@ -9,10 +9,18 @@
 <body>
   <div class="container">
     <h2>Register</h2>
-    <form id="registerForm">
+    <form id="register-form">
       <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" class="form-control" id="username" required>
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input type="text" class="form-control" id="phone" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" class="form-control" id="email" required>
       </div>
       <div class="form-group">
         <label for="password">Password</label>
@@ -20,11 +28,16 @@
       </div>
       <button type="submit" class="btn btn-primary">Register</button>
     </form>
+    <div id="register-status"></div>
   </div>
+
   <script>
-    document.getElementById('registerForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
+    document.getElementById('register-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('name').value;
+      const phone = document.getElementById('phone').value;
+      const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
       fetch('/register', {
@@ -32,15 +45,17 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ name, phone, email, password })
       })
       .then(response => response.json())
       .then(data => {
+        const registerStatus = document.getElementById('register-status');
         if (data.success) {
-          alert('Registration successful');
-          window.location.href = '/';
+          registerStatus.textContent = 'User registered successfully';
+          registerStatus.classList.add('text-success');
         } else {
-          alert('Registration failed: ' + data.message);
+          registerStatus.textContent = 'Registration failed: ' + data.message;
+          registerStatus.classList.add('text-danger');
         }
       })
       .catch(error => {

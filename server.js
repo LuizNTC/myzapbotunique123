@@ -1,24 +1,41 @@
 const express = require('express');
-const { create } = require('venom-bot');
+const { create, Whatsapp } = require('venom-bot');
 const path = require('path');
 const WebSocket = require('ws');
 const fs = require('fs');
 const axios = require('axios');
+const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 let clientInstance;
 let wss;
 
-let users = []; // Simulação de banco de dados de usuários
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
-const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I"; // Adicione sua chave de API aqui
+app.use(session({
+  store: new pgSession({
+    pool: pool,
+    tableName: 'user_sessions'
+  }),
+  secret: 'mySecret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
+}));
+
+const apiKey = "SUA_API_KEY"; // Adicione sua chave de API aqui
 const requestQueue = [];
 let isProcessingQueue = false;
 const sessions = {};
-const basePromptParts = [
-  "Você é o atendente da marca Greenplay, o GreenBOT, com os dados de acesso greenplay o cliente pode utilizar sua lista de Canais, Filmes e Séries no aplicativo que bem quiser, parte totalmente da sua preferência mesmo.",
-];
 
 console.log('Initializing server...');
 
@@ -30,40 +47,84 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
-app.post('/register', (req, res) => {
-  console.log('Received request to register:', req.body);
-  const { username, password } = req.body;
-  if (username && password) {
-    users.push({ username, password });
-    console.log('User registered:', username);
-    res.status(201).json({ success: true });
+app.post('/register', async (req, res) => {
+  const { name, phone, email, password } = req.body;
+  if (name && phone && email && password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const client = await pool.connect();
+    try {
+      await client.query(
+        'INSERT INTO users (username, phone, email, password) VALUES ($1, $2, $3, $4)',
+        [name, phone, email, hashedPassword]
+      );
+      res.status(201).json({ success: true });
+    } catch (err) {
+      console.error('Error registering user:', err);
+      res.status(500).json({ success: false, message: 'Error registering user' });
+    } finally {
+      client.release();
+    }
   } else {
-    console.log('Registration failed: Username and password are required');
-    res.status(400).json({ success: false, message: 'Username and password are required' });
+    res.status(400).json({ success: false, message: 'All fields are required' });
   }
 });
 
-app.post('/login', (req, res) => {
-  console.log('Received request to login:', req.body);
-  const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    console.log('Login successful for user:', username);
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+    if (user && await bcrypt.compare(password, user.password)) {
+      req.session.userId = user.id;
+      res.status(200).json({ success: true });
+    } else {
+      res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+  } catch (err) {
+    console.error('Error logging in user:', err);
+    res.status(500).json({ success: false, message: 'Error logging in user' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/set-prompt', async (req, res) => {
+  const { prompt } = req.body;
+  const userId = req.session.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('UPDATE users SET prompt = $1 WHERE id = $2', [prompt, userId]);
     res.status(200).json({ success: true });
-  } else {
-    console.log('Login failed: Invalid credentials');
-    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  } catch (err) {
+    console.error('Error setting prompt:', err);
+    res.status(500).json({ success: false, message: 'Error setting prompt' });
+  } finally {
+    client.release();
   }
 });
 
 app.post('/start-bot', (req, res) => {
   console.log('Received request to start bot');
-  startBot(); // Chama a função startBot ao acessar o endpoint
+  const userId = req.session.userId;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+  startBot(userId);
+  res.json({ success: true });
+});
+
+app.post('/stop-bot', (req, res) => {
+  console.log('Received request to stop bot');
+  stopBot();
   res.json({ success: true });
 });
 
 const cleanSession = () => {
-  const sessionDir = path.join(__dirname, 'session_name');
+  const sessionDir = path.join(__dirname, 'tokens', 'session_name');
   if (fs.existsSync(sessionDir)) {
     fs.rmdirSync(sessionDir, { recursive: true });
     console.log('Previous session removed.');
@@ -73,7 +134,7 @@ const cleanSession = () => {
 const processQueue = () => {
   if (isProcessingQueue || requestQueue.length === 0) return;
 
-  const { client, message } = requestQueue.shift();
+  const { client, message, prompt } = requestQueue.shift();
 
   console.log(`Processing message from ${message.from}`);
 
@@ -81,7 +142,7 @@ const processQueue = () => {
     const session = sessions[message.from] || { history: [] };
     session.history.push(`Cliente: ${message.body}`);
 
-    const fullPrompt = `${basePromptParts.join('\n')}\n\nHistórico da conversa:\n${session.history.join('\n')}`;
+    const fullPrompt = `${prompt}\n\nHistórico da conversa:\n${session.history.join('\n')}`;
 
     console.log(`Sending prompt to API: ${fullPrompt}`);
 
@@ -129,59 +190,82 @@ const processQueue = () => {
   tryRequest(3);
 };
 
-const startBot = () => {
+const startBot = async (userId) => {
   cleanSession();
-  create(
-    'session_name',
-    (base64Qr, asciiQR) => {
-      console.log('QR Code generated, scan with your WhatsApp:');
-      console.log(asciiQR);
-      if (wss) {
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ status: 'qr_code', data: base64Qr }));
-            console.log('Sent QR Code to client');
-          }
-        });
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT prompt FROM users WHERE id = $1', [userId]);
+    const prompt = result.rows[0].prompt || "Default prompt";
+    
+    create(
+      'session_name',
+      (base64Qr, asciiQR) => {
+        console.log('QR Code generated, scan with your WhatsApp:');
+        console.log(asciiQR);
+        if (wss) {
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify({ status: 'qr_code', data: base64Qr }));
+              console.log('Sent QR Code to client');
+            }
+          });
+        }
+      },
+      undefined,
+      {
+        headless: true,
+        useChrome: true, // Usar Chrome/Chromium
+        browserArgs: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu'
+        ]
       }
-    },
-    undefined,
-    {
-      headless: true,
-      useChrome: true, // Usar Chrome/Chromium
-      browserArgs: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
-    }
-  )
-    .then((client) => {
-      clientInstance = client;
-      console.log('WhatsApp connected successfully!');
-      if (wss) {
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ status: 'connected' }));
-            console.log('Sent connected status to client');
-          }
-        });
-      }
+    )
+      .then((client) => {
+        clientInstance = client;
+        console.log('WhatsApp connected successfully!');
+        if (wss) {
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify({ status: 'connected' }));
+              console.log('Sent connected status to client');
+            }
+          });
+        }
 
-      client.onMessage((message) => {
-        console.log('Message received:', message.body);
-        requestQueue.push({ client, message });
-        processQueue();
+        client.onMessage((message) => {
+          console.log('Message received:', message.body);
+          requestQueue.push({ client, message, prompt });
+          processQueue();
+        });
+      })
+      .catch((err) => {
+        console.error('Error connecting to WhatsApp:', err.message);
       });
-    })
-    .catch((err) => {
-      console.error('Error connecting to WhatsApp:', err.message);
+  } catch (err) {
+    console.error('Error getting prompt:', err);
+  } finally {
+    client.release();
+  }
+};
+
+const stopBot = () => {
+  if (clientInstance) {
+    clientInstance.close().then(() => {
+      console.log('WhatsApp session closed successfully!');
+      cleanSession();
+    }).catch(err => {
+      console.error('Error closing WhatsApp session:', err.message);
     });
+  } else {
+    console.log('No active WhatsApp session to stop');
+  }
 };
 
 const server = app.listen(PORT, () => {

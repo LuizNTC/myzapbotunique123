@@ -185,7 +185,7 @@
       <div> <a href="dashboard.html" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">ZapLite</span> </a>
         <div class="nav_list"> <a href="#" class="nav_link active"> <i class='bx bx-grid-alt nav_icon'></i> <span class="nav_name">Dashboard</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-user nav_icon'></i> <span class="nav_name">Users</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Messages</span> </a> 
+          <a href="#" class="nav_link"> < i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Messages</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-bookmark nav_icon'></i> <span class="nav_name">Bookmark</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-folder nav_icon'></i> <span class="nav_name">Files</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> </a> 
@@ -198,6 +198,12 @@
   <div class="height-100 bg-light">
     <h4>Main Components</h4>
     <button id="start-bot" class="btn btn-success btn-block mt-4">Start Bot</button>
+    <button id="stop-bot" class="btn btn-danger btn-block mt-4">Stop Bot</button>
+    <div class="form-group">
+      <label for="prompt">Prompt:</label>
+      <textarea class="form-control" id="prompt" rows="3"></textarea>
+      <button id="save-prompt" class="btn btn-primary btn-block mt-2">Save Prompt</button>
+    </div>
     <div id="qr-code-container">
       <img id="qr-code" src="" alt="QR Code" style="display: none;">
     </div>
@@ -237,8 +243,31 @@
       linkColor.forEach(l => l.addEventListener('click', colorLink));
     });
 
-    // Código QR e WebSocket
+    // Função de salvamento do prompt
+    const savePromptButton = document.getElementById('save-prompt');
+    savePromptButton.addEventListener('click', () => {
+      const prompt = document.getElementById('prompt').value;
+      const userId = localStorage.getItem('userId'); // Assumindo que o userId foi salvo no login
+      fetch('/set-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId, prompt })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Prompt saved successfully');
+        } else {
+          alert('Failed to save prompt');
+        }
+      });
+    });
+
+    // Iniciar e parar bot
     const startBotButton = document.getElementById('start-bot');
+    const stopBotButton = document.getElementById('stop-bot');
     const statusElement = document.getElementById('status');
     const qrCodeImage = document.getElementById('qr-code');
 
@@ -254,6 +283,22 @@
           } else {
             console.error('Failed to start bot:', data.message);
             statusElement.textContent = 'Failed to start bot';
+          }
+        });
+    });
+
+    stopBotButton.addEventListener('click', () => {
+      fetch('/stop-bot', {
+        method: 'POST'
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            qrCodeImage.style.display = 'none';
+            statusElement.textContent = 'Bot stopped successfully';
+            console.log('Bot stopped');
+          } else {
+            console.error('Failed to stop bot:', data.message);
+            statusElement.textContent = 'Failed to stop bot';
           }
         });
     });
