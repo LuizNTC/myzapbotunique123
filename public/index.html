@@ -55,6 +55,9 @@
       });
       const result = await response.json();
       document.getElementById('loginResult').textContent = result.success ? 'Login successful!' : 'Login failed!';
+      if (result.success) {
+        window.location.href = '/dashboard.html';
+      }
     });
 
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
