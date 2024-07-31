@@ -325,7 +325,7 @@
         });
     });
 
-    const ws = new WebSocket(`ws://${window.location.host}`);
+    const ws = new WebSocket(`wss://${window.location.host}`);
 
     ws.onmessage = (event) => {
       console.log('Mensagem recebida do WebSocket:', event.data); // Log inicial para ver a mensagem recebida
@@ -358,6 +358,7 @@
     ws.onclose = () => {
       console.log('Conexão do WebSocket fechada'); // Log para quando a conexão é fechada
     };
+
 
   </script>
 </body>

@@ -220,7 +220,7 @@ const startBot = async (userId) => {
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
               client.send(JSON.stringify({ status: 'qr_code', data: base64Qr }));
-              console.log('Sent QR Code to client');
+              console.log('Sent QR Code to client'); // Adicionando log aqui
             }
           });
         }
@@ -248,7 +248,7 @@ const startBot = async (userId) => {
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
               client.send(JSON.stringify({ status: 'connected' }));
-              console.log('Sent connected status to client');
+              console.log('Sent connected status to client'); // Adicionando log aqui
             }
           });
         }
@@ -268,6 +268,7 @@ const startBot = async (userId) => {
     client.release();
   }
 };
+
 
 const stopBot = () => {
   if (clientInstance) {
