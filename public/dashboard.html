@@ -328,17 +328,37 @@
     const ws = new WebSocket(`ws://${window.location.host}`);
 
     ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
+      console.log('Mensagem recebida do WebSocket:', event.data); // Log inicial para ver a mensagem recebida
 
-      if (message.status === 'qr_code') {
-        qrCodeImage.src = message.data;
-        qrCodeImage.style.display = 'block';
-        statusElement.textContent = 'Scan the QR Code with your WhatsApp';
-      } else if (message.status === 'connected') {
-        statusElement.textContent = 'WhatsApp connected';
-        qrCodeImage.style.display = 'none';
+      try {
+        const message = JSON.parse(event.data);
+        console.log('Mensagem parseada:', message); // Verificando se a mensagem foi parseada corretamente
+
+        if (message.status === 'qr_code') {
+          console.log('QR Code recebido:', message.data); // Log específico para QR Code
+          qrCodeImage.src = message.data;
+          qrCodeImage.style.display = 'block';
+          statusElement.textContent = 'Scan the QR Code with your WhatsApp';
+        } else if (message.status === 'connected') {
+          console.log('Conexão estabelecida com o WhatsApp'); // Log específico para conexão estabelecida
+          statusElement.textContent = 'WhatsApp connected';
+          qrCodeImage.style.display = 'none';
+        } else {
+          console.log('Status desconhecido:', message.status); // Log para status desconhecido
+        }
+      } catch (error) {
+        console.error('Erro ao processar mensagem do WebSocket:', error); // Log para qualquer erro no processamento
       }
     };
+
+    ws.onerror = (error) => {
+      console.error('Erro no WebSocket:', error); // Log para erros do WebSocket
+    };
+
+    ws.onclose = () => {
+      console.log('Conexão do WebSocket fechada'); // Log para quando a conexão é fechada
+    };
+
   </script>
 </body>
 </html>
