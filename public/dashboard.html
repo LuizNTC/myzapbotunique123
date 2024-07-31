@@ -185,7 +185,7 @@
       <div> <a href="dashboard.html" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">ZapLite</span> </a>
         <div class="nav_list"> <a href="#" class="nav_link active"> <i class='bx bx-grid-alt nav_icon'></i> <span class="nav_name">Dashboard</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-user nav_icon'></i> <span class="nav_name">Users</span> </a> 
-          <a href="#" class="nav_link"> < i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Messages</span> </a> 
+          <a href="#" class="nav_link"> <i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Messages</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-bookmark nav_icon'></i> <span class="nav_name">Bookmark</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-folder nav_icon'></i> <span class="nav_name">Files</span> </a> 
           <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> </a> 
@@ -242,7 +242,7 @@
       }
       linkColor.forEach(l => l.addEventListener('click', colorLink));
 
-      // Carregar o prompt ao carregar a página
+      // Carregar o prompt do usuário ao carregar a página
       const userId = localStorage.getItem('userId'); // Assumindo que o userId foi salvo no login
       if (userId) {
         fetch('/get-prompt', {
@@ -254,10 +254,8 @@
         })
         .then(response => response.json())
         .then(data => {
-          if (data.success) {
+          if (data.success && data.prompt) {
             document.getElementById('prompt').value = data.prompt;
-          } else {
-            console.error('Failed to load prompt:', data.message);
           }
         });
       }
@@ -292,7 +290,6 @@
     const qrCodeImage = document.getElementById('qr-code');
 
     startBotButton.addEventListener('click', () => {
-      const userId = localStorage.getItem('userId'); // Assumindo que o userId foi salvo no login
       statusElement.textContent = 'Bot started successfully. Waiting for QR Code...';
 
       fetch('/start-bot', {
@@ -300,7 +297,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ userId })
+        body: JSON.stringify({ userId: localStorage.getItem('userId') })
       }).then(response => response.json())
         .then(data => {
           if (data.success) {
