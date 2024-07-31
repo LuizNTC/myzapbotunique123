@@ -6,11 +6,10 @@ const fs = require('fs');
 const axios = require('axios');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
-const helmet = require('helmet'); // Importando Helmet
+const helmet = require('helmet');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-let clientInstance;
 let wss;
 
 const pool = new Pool({
@@ -20,7 +19,7 @@ const pool = new Pool({
   }
 });
 
-const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I"; // Adicione sua chave de API aqui
+const apiKey = "YOUR_API_KEY"; // Adicione sua chave de API aqui
 const requestQueue = [];
 let isProcessingQueue = false;
 const sessions = {};
@@ -130,15 +129,16 @@ app.post('/start-bot', (req, res) => {
 
 app.post('/stop-bot', (req, res) => {
   console.log('Received request to stop bot');
-  stopBot();
+  const { userId } = req.body;
+  stopBot(userId);
   res.json({ success: true });
 });
 
-const cleanSession = () => {
-  const sessionDir = path.join(__dirname, 'tokens', 'session_name');
+const cleanSession = (sessionName) => {
+  const sessionDir = path.join(__dirname, 'tokens', sessionName);
   if (fs.existsSync(sessionDir)) {
     fs.rmdirSync(sessionDir, { recursive: true });
-    console.log('Previous session removed.');
+    console.log(`Previous session ${sessionName} removed.`);
   }
 };
 
@@ -202,7 +202,13 @@ const processQueue = () => {
 };
 
 const startBot = async (userId) => {
-  cleanSession();
+  const sessionName = `session_${userId}`;
+  if (sessions[sessionName]) {
+    console.log(`Bot already started for user ${userId}`);
+    return;
+  }
+
+  cleanSession(sessionName);
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT prompt FROM users WHERE id = $1', [userId]);
@@ -212,7 +218,7 @@ const startBot = async (userId) => {
     const prompt = result.rows[0].prompt || "Default prompt";
     
     create(
-      'session_name',
+      sessionName,
       (base64Qr, asciiQR) => {
         console.log('QR Code generated, scan with your WhatsApp:');
         console.log(asciiQR);
@@ -220,7 +226,7 @@ const startBot = async (userId) => {
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
               client.send(JSON.stringify({ status: 'qr_code', data: base64Qr }));
-              console.log('Sent QR Code to client'); // Adicionando log aqui
+              console.log('Sent QR Code to client');
             }
           });
         }
@@ -242,13 +248,13 @@ const startBot = async (userId) => {
       }
     )
       .then((client) => {
-        clientInstance = client;
-        console.log('WhatsApp connected successfully!');
+        sessions[sessionName] = client;
+        console.log(`WhatsApp connected successfully for user ${userId}!`);
         if (wss) {
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
               client.send(JSON.stringify({ status: 'connected' }));
-              console.log('Sent connected status to client'); // Adicionando log aqui
+              console.log('Sent connected status to client');
             }
           });
         }
@@ -269,17 +275,18 @@ const startBot = async (userId) => {
   }
 };
 
-
-const stopBot = () => {
-  if (clientInstance) {
-    clientInstance.close().then(() => {
-      console.log('WhatsApp session closed successfully!');
-      cleanSession();
+const stopBot = (userId) => {
+  const sessionName = `session_${userId}`;
+  if (sessions[sessionName]) {
+    sessions[sessionName].close().then(() => {
+      console.log(`WhatsApp session closed successfully for user ${userId}!`);
+      delete sessions[sessionName];
+      cleanSession(sessionName);
     }).catch(err => {
       console.error('Error closing WhatsApp session:', err.message);
     });
   } else {
-    console.log('No active WhatsApp session to stop');
+    console.log(`No active WhatsApp session to stop for user ${userId}`);
   }
 };
 
