@@ -20,7 +20,7 @@ const pool = new Pool({
   }
 });
 
-const apiKey = "YOUR_API_KEY"; // Adicione sua chave de API aqui
+const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I"; // Adicione sua chave de API aqui
 const requestQueue = [];
 let isProcessingQueue = false;
 const sessions = {};
