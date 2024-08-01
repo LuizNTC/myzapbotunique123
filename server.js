@@ -47,6 +47,11 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  console.log('Route /login accessed');
+});
+
 app.post('/register', async (req, res) => {
   const { username, name, phone, email, password } = req.body;
   if (username && name && phone && email && password) {
@@ -133,6 +138,17 @@ app.post('/stop-bot', (req, res) => {
   stopBot(userId);
   res.json({ success: true });
 });
+
+app.post('/bot-status', (req, res) => {
+  const { userId } = req.body;
+  const sessionName = `session_${userId}`;
+  if (sessions[sessionName]) {
+    res.json({ success: true, status: 'connected' });
+  } else {
+    res.json({ success: true, status: 'not_connected' });
+  }
+});
+
 
 const cleanSession = (sessionName) => {
   const sessionDir = path.join(__dirname, 'tokens', sessionName);

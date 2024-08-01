@@ -184,9 +184,11 @@
     <nav class="nav">
       <div> <a href="dashboard.html" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">ZapLite</span> </a>
         <div class="nav_list"> <a href="#" class="nav_link active"> <i class='bx bx-grid-alt nav_icon'></i> <span class="nav_name">Dashboard</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-user nav_icon'></i> <span class="nav_name">Meu Usuário</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Tutoriais</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Planos</span> </a> 
+          <a href="#" class="nav_link"> <i class='bx bx-user nav_icon'></i> <span class="nav_name">Users</span> </a> 
+          <a href="#" class="nav_link"> <i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Messages</span> </a> 
+          <a href="#" class="nav_link"> <i class='bx bx-bookmark nav_icon'></i> <span class="nav_name">Bookmark</span> </a> 
+          <a href="#" class="nav_link"> < i class='bx bx-folder nav_icon'></i> <span class="nav_name">Files</span> </a> 
+          <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> </a> 
         </div>
       </div> 
       <a href="index.html" class="nav_link"> <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">SignOut</span> </a>
@@ -256,6 +258,23 @@
             document.getElementById('prompt').value = data.prompt;
           }
         });
+
+        // Verificar o status do bot ao carregar a página
+        fetch('/bot-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            if (data.status === 'connected') {
+              document.getElementById('status').textContent = 'WhatsApp connected';
+            }
+          }
+        });
       }
     });
 
@@ -309,7 +328,11 @@
 
     stopBotButton.addEventListener('click', () => {
       fetch('/stop-bot', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: localStorage.getItem('userId') })
       }).then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -326,38 +349,17 @@
     const ws = new WebSocket(`wss://${window.location.host}`);
 
     ws.onmessage = (event) => {
-      console.log('Mensagem recebida do WebSocket:', event.data); // Log inicial para ver a mensagem recebida
+      const message = JSON.parse(event.data);
 
-      try {
-        const message = JSON.parse(event.data);
-        console.log('Mensagem parseada:', message); // Verificando se a mensagem foi parseada corretamente
-
-        if (message.status === 'qr_code') {
-          console.log('QR Code recebido:', message.data); // Log específico para QR Code
-          qrCodeImage.src = message.data;
-          qrCodeImage.style.display = 'block';
-          statusElement.textContent = 'Scan the QR Code with your WhatsApp';
-        } else if (message.status === 'connected') {
-          console.log('Conexão estabelecida com o WhatsApp'); // Log específico para conexão estabelecida
-          statusElement.textContent = 'WhatsApp connected';
-          qrCodeImage.style.display = 'none';
-        } else {
-          console.log('Status desconhecido:', message.status); // Log para status desconhecido
-        }
-      } catch (error) {
-        console.error('Erro ao processar mensagem do WebSocket:', error); // Log para qualquer erro no processamento
+      if (message.status === 'qr_code') {
+        qrCodeImage.src = message.data;
+        qrCodeImage.style.display = 'block';
+        statusElement.textContent = 'Scan the QR Code with your WhatsApp';
+      } else if (message.status === 'connected') {
+        statusElement.textContent = 'WhatsApp connected';
+        qrCodeImage.style.display = 'none';
       }
     };
-
-    ws.onerror = (error) => {
-      console.error('Erro no WebSocket:', error); // Log para erros do WebSocket
-    };
-
-    ws.onclose = () => {
-      console.log('Conexão do WebSocket fechada'); // Log para quando a conexão é fechada
-    };
-
-
   </script>
 </body>
 </html>
