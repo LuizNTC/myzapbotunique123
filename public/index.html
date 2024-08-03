@@ -1,71 +1,588 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZapLite - Your WhatsApp Automation Solution</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <style>
-    .hero-section {
-      background-color: #92aca5;
-      color: #fff;
-      padding: 100px 0;
-      text-align: center;
-    }
-    .features-section {
-      padding: 50px 0;
-    }
-    .feature {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>ZapLite - Inteligência Artificial para WhatsApp</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="assets/img/favicon.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Raleway:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- Main CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
+
+  <!-- =======================================================
+  * Template Name: Bootslander
+  * Template URL: https://bootstrapmade.com/bootslander-free-bootstrap-landing-page-template/
+  * Updated: Aug 01 2024 with Bootstrap v5.3.3
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
 </head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">ZapLite</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="login.html">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="register.html">Register</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
 
-  <section class="hero-section">
-    <div class="container">
-      <h1>Bem-Vindo a ZapLite</h1>
-      <p>Sua solução definitiva de automação para o WhatsApp.</p>
-      <a href="register.html" class="btn btn-primary">Adquirir Serviço</a>
-    </div>
-  </section>
+<body class="index-page">
 
-  <section class="features-section">
-    <div class="container">
-      <h2 class="text-center">Features</h2>
-      <div class="row">
-        <div class="col-md-4 feature">
-          <h3>Easy Integration</h3>
-          <p>Integrate seamlessly with your WhatsApp account.</p>
-        </div>
-        <div class="col-md-4 feature">
-          <h3>24/7 Support</h3>
-          <p>Automate your responses and support your customers round the clock.</p>
-        </div>
-        <div class="col-md-4 feature">
-          <h3>Customizable Prompts</h3>
-          <p>Set up custom prompts to personalize your customer interactions.</p>
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+
+      <a href="index.html" class="logo d-flex align-items-center">
+        <!-- Uncomment the line below if you also wish to use an image logo -->
+        <!-- <img src="assets/img/logo.png" alt=""> -->
+        <h1 class="sitename">ZapLite</h1>
+      </a>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="#hero" class="active">Inicio</a></li>
+          <li><a href="#about">Planos</a></li>
+          <li><a href="#features">FAQ</a></li>
+          <li class="dropdown"><a href="#"><span>Login/Registro</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <ul>
+              <li><a href="login.html">Login</a></li>
+              <li><a href="register.html">Registrar-se</a></li>
+            </ul>
+          </li>
+          <li><a href="#contact">Contato</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero section dark-background">
+      <img src="assets/img/hero-bg-2.jpg" alt="" class="hero-bg">
+
+      <div class="container">
+        <div class="row gy-4 justify-content-between">
+          <div class="col-lg-4 order-lg-last hero-img" data-aos="zoom-out" data-aos-delay="100">
+            <img src="assets/img/hero-img.png" class="img-fluid animated" alt="">
+          </div>
+
+          <div class="col-lg-6  d-flex flex-column justify-content-center" data-aos="fade-in">
+            <h1>O futuro do atendimento ao cliente é agora. Conheça a <span>ZapLite</span></h1>
+            <p>Primeiro serviço de assinatura de IA no Brasil para atendimento automático via WhatsApp.</p>
+            <div class="d-flex">
+              <a href="#about" class="btn-get-started">CONTRATAR</a>
+              <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="glightbox btn-watch-video d-flex align-items-center"><i class="bi bi-play-circle"></i><span>Conhecer Serviço</span></a>
+            </div>
+          </div>
+
         </div>
       </div>
+
+      <svg class="hero-waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 24 150 28 " preserveAspectRatio="none">
+        <defs>
+          <path id="wave-path" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"></path>
+        </defs>
+        <g class="wave1">
+          <use xlink:href="#wave-path" x="50" y="3"></use>
+        </g>
+        <g class="wave2">
+          <use xlink:href="#wave-path" x="50" y="0"></use>
+        </g>
+        <g class="wave3">
+          <use xlink:href="#wave-path" x="50" y="9"></use>
+        </g>
+      </svg>
+
+    </section><!-- /Hero Section -->
+
+    <!-- About Section -->
+    <section id="about" class="about section">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row align-items-xl-center gy-5">
+
+          <div class="col-xl-5 content">
+            <h3>Vantagens</h3>
+            <h2>Leve uma experiência global para os seus clientes</h2>
+            <p>Nossa plataforma é extremamente fácil de usar e pode ser implementada em seu negócio em poucos minutos. Descubra como a ZapLite pode transformar seu atendimento ao cliente:</p>
+            <a href="#" class="read-more"><span>Vantagens</span><i class="bi bi-arrow-right"></i></a>
+          </div>
+
+          <div class="col-xl-7">
+            <div class="row gy-4 icon-boxes">
+
+              <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                <div class="icon-box">
+                  <i class="bi bi-buildings"></i>
+                  <h3>Respostas Imediatas</h3>
+                  <p>Garanta que seus clientes recebam respostas rápidas e precisas a qualquer hora do dia</p>
+                </div>
+              </div> <!-- End Icon Box -->
+
+              <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                <div class="icon-box">
+                  <i class="bi bi-clipboard-pulse"></i>
+                  <h3>Personalização</h3>
+                  <p>Customize as interações de acordo com as necessidades e preferências de cada cliente</p>
+                </div>
+              </div> <!-- End Icon Box -->
+
+              <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                <div class="icon-box">
+                  <i class="bi bi-command"></i>
+                  <h3>Redução de Custos</h3>
+                  <p>Minimize a necessidade de uma grande equipe de atendimento ao cliente.</p>
+                </div>
+              </div> <!-- End Icon Box -->
+
+              <div class="col-md-6" data-aos="fade-up" data-aos-delay="500">
+                <div class="icon-box">
+                  <i class="bi bi-graph-up-arrow"></i>
+                  <h3>Escalabilidade</h3>
+                  <p>Escale o atendimento conforme o crescimento da sua empresa sem aumentar custos operacionais.</p>
+                </div>
+              </div> <!-- End Icon Box -->
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section><!-- /About Section -->
+
+    <!-- Features Section -->
+    <section id="features" class="features section">
+
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="features-item">
+              <i class="bi bi-eye" style="color: #1acc8d;"></i>
+              <h3><a href="" class="stretched-link">Vizualização Instantânea</a></h3>
+            </div>
+          </div><!-- End Feature Item -->
+
+          <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="300">
+            <div class="features-item">
+              <i class="bi bi-mortarboard" style="color: #1acc8d;"></i>
+              <h3><a href="" class="stretched-link">Mini Curso para uso</a></h3>
+            </div>
+          </div><!-- End Feature Item -->
+
+          <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="400">
+            <div class="features-item">
+              <i class="bi bi-nut" style="color: #1acc8d;"></i>
+              <h3><a href="" class="stretched-link">Configuração Fácil</a></h3>
+            </div>
+          </div><!-- End Feature Item -->
+
+          <div class="col-lg-3 col-md-4" data-aos="fade-up" data-aos-delay="700">
+            <div class="features-item">
+              <i class="bi bi-x-diamond" style="color: #1acc8d;"></i>
+              <h3><a href="" class="stretched-link">Pagamento Fácilitado</a></h3>
+            </div>
+          </div><!-- End Feature Item -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Features Section -->
+
+    <!-- Stats Section -->
+    <section id="stats" class="stats section light-background">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
+            <i class="bi bi-emoji-smile"></i>
+            <div class="stats-item">
+              <span data-purecounter-start="0" data-purecounter-end="547" data-purecounter-duration="1" class="purecounter"></span>
+              <p>Clientes Satisfeitos</p>
+            </div>
+          </div><!-- End Stats Item -->
+
+          <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
+            <i class="bi bi-journal-richtext"></i>
+            <div class="stats-item">
+              <span data-purecounter-start="0" data-purecounter-end="823000" data-purecounter-duration="1" class="purecounter"></span>
+              <p>Mensagens Processadas</p>
+            </div>
+          </div><!-- End Stats Item -->
+
+          <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
+            <i class="bi bi-headset"></i>
+            <div class="stats-item">
+              <span data-purecounter-start="0" data-purecounter-end="107" data-purecounter-duration="1" class="purecounter"></span>
+              <p>Empresas 100% Automatizadas</p>
+            </div>
+          </div><!-- End Stats Item -->
+
+          <div class="col-lg-3 col-md-6 d-flex flex-column align-items-center">
+            <i class="bi bi-people"></i>
+            <div class="stats-item">
+              <span data-purecounter-start="0" data-purecounter-end="15" data-purecounter-duration="1" class="purecounter"></span>
+              <p>Plataformas Parceiras</p>
+            </div>
+          </div><!-- End Stats Item -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Stats Section -->
+
+    <!-- Details Section -->
+    <section id="details" class="details section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Detalhes</h2>
+        <div><span>Serve para </span> <span class="description-title">você?</span></div>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-md-5 d-flex align-items-center" data-aos="zoom-out" data-aos-delay="100">
+            <img src="assets/img/details-1.png" class="img-fluid" alt="">
+          </div>
+          <div class="col-md-7" data-aos="fade-up" data-aos-delay="100">
+            <h3>Qualquer modelo de negócio:</h3>
+            <p class="fst-italic">
+              Pode usar para venda de produtos físicos, digitais, prestação de serviço, SAAS, suporte a clientes...
+            </p>
+            <ul>
+              <li><i class="bi bi-check"></i><span> Produtos Físicos: Ideal para lojas que vendem produtos físicos, permitindo atendimento e suporte automatizado.</span></li>
+              <li><i class="bi bi-check"></i> <span>Produtos Digitais: Perfeito para negócios que oferecem produtos digitais, proporcionando suporte rápido e eficiente.</span></li>
+              <li><i class="bi bi-check"></i><span> Prestação de Serviços: Facilita o agendamento e suporte para empresas de serviços, melhorando a experiência do cliente.</span></li>
+              <li><i class="bi bi-check"></i> <span>Suporte ao Cliente: Pode ser usado como uma ferramenta de suporte ao cliente, garantindo respostas rápidas e precisas.</span></li>
+              <li><i class="bi bi-check"></i> <span>Pequenas e Médias Empresas: Escalável para atender desde pequenos empreendedores até empresas de médio porte.</span></li>
+            </ul>
+          </div>
+        </div><!-- Features Item -->
+
+      </div>
+
+    </section><!-- /Details Section -->
+
+
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing section">
+
+      <!-- Section Title -->
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Planos</h2>
+        <div><span>Conheça nossos </span> <span class="description-title">Planos</span></div>
+      </div><!-- End Section Title -->
+
+      <div class="container">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-3" data-aos="zoom-in" data-aos-delay="100">
+            <div class="pricing-item">
+              <h3>Plano Mensal</h3>
+              <p class="description">Tenha acesso a ferramenta completa do ZapLite por 1 Mês</p>
+              <h4><sup>R$ </sup>79,9<span> / Mês</span></h4>
+              <a href="#" class="cta-btn">Adquirir 1 Mês</a>
+              <p class="text-center small">Plano Completo</p>
+              <ul>
+                <li><i class="bi bi-check"></i> <span>Respostas humanizadas para seu cliente.</span></li>
+                <li><i class="bi bi-check"></i> <span>Responda automaticamente às perguntas frequentes e forneça suporte em tempo real.</span></li>
+                <li><i class="bi bi-check"></i> <span>Customize o estilo de respostas de acordo com as necessidades do seu negócio.</span></li>
+                <li><i class="bi bi-check"></i> <span>Conexão com WhatsApp facilitada.</span></li>
+                <li><i class="bi bi-check"></i> <span>Tutoriais ensinando a configuração da plataforma em poucos minutos.</span></li>
+              </ul>
+            </div>
+          </div><!-- End Pricing Item -->
+
+          <div class="col-lg-3" data-aos="zoom-in" data-aos-delay="200">
+            <div class="pricing-item featured">
+              <p class="popular">Popular</p>
+              <h3>Plano Trimestral</h3>
+              <p class="description">Tenha acesso a ferramenta completa do ZapLite por 3 Meses</p>
+              <h4><sup>R$ </sup>197,9<span> / 3 Meses</span></h4>
+              <a href="#" class="cta-btn">Adquirir 3 Meses</a>
+              <p class="text-center small">Plano Completo</p>
+              <ul>
+                <li><i class="bi bi-check"></i> <span>Respostas humanizadas para seu cliente.</span></li>
+                <li><i class="bi bi-check"></i> <span>Responda automaticamente às perguntas frequentes e forneça suporte em tempo real.</span></li>
+                <li><i class="bi bi-check"></i> <span>Customize o estilo de respostas de acordo com as necessidades do seu negócio.</span></li>
+                <li><i class="bi bi-check"></i> <span>Conexão com WhatsApp facilitada.</span></li>
+                <li><i class="bi bi-check"></i> <span>Tutoriais ensinando a configuração da plataforma em poucos minutos.</span></li>
+              </ul>
+            </div>
+          </div><!-- End Pricing Item -->
+
+          <div class="col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+            <div class="pricing-item">
+              <h3>Plano Semestral</h3>
+              <p class="description">Tenha acesso a ferramenta completa do ZapLite por 6 Meses</p>
+              <h4><sup>R$ </sup>373,8<span> / 6 Meses</span></h4>
+              <a href="#" class="cta-btn">Adquirir 6 Meses</a>
+              <p class="text-center small">Plano Completo</p>
+              <ul>
+                <li><i class="bi bi-check"></i> <span>Respostas humanizadas para seu cliente.</span></li>
+                <li><i class="bi bi-check"></i> <span>Responda automaticamente às perguntas frequentes e forneça suporte em tempo real.</span></li>
+                <li><i class="bi bi-check"></i> <span>Customize o estilo de respostas de acordo com as necessidades do seu negócio.</span></li>
+                <li><i class="bi bi-check"></i> <span>Conexão com WhatsApp facilitada.</span></li>
+                <li><i class="bi bi-check"></i> <span>Tutoriais ensinando a configuração da plataforma em poucos minutos.</span></li>
+              </ul>
+            </div>
+          </div><!-- End Pricing Item -->
+
+          <div class="col-lg-3" data-aos="zoom-in" data-aos-delay="300">
+            <div class="pricing-item">
+              <h3>Plano Anual</h3>
+              <p class="description">Tenha acesso a ferramenta completa do ZapLite por 1 Ano</p>
+              <h4><sup>R$</sup>670,8<span> / Ano</span></h4>
+              <a href="#" class="cta-btn">Adquirir 1 Ano</a>
+              <p class="text-center small">Plano Completo</p>
+              <ul>
+                <li><i class="bi bi-check"></i> <span>Respostas humanizadas para seu cliente.</span></li>
+                <li><i class="bi bi-check"></i> <span>Responda automaticamente às perguntas frequentes e forneça suporte em tempo real.</span></li>
+                <li><i class="bi bi-check"></i> <span>Customize o estilo de respostas de acordo com as necessidades do seu negócio.</span></li>
+                <li><i class="bi bi-check"></i> <span>Conexão com WhatsApp facilitada.</span></li>
+                <li><i class="bi bi-check"></i> <span>Tutoriais ensinando a configuração da plataforma em poucos minutos.</span></li>
+              </ul>
+            </div>
+          </div><!-- End Pricing Item -->
+
+        </div>
+
+      </div>
+
+    </section><!-- /Pricing Section -->
+
+
+    <!-- REVIEW DE CLIENTES -->
+    <section id="testimonials" class="testimonials section dark-background">
+
+      <img src="assets/img/testimonials-bg.jpg" class="testimonials-bg" alt="">
+
+      <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="swiper init-swiper">
+          <script type="application/json" class="swiper-config">
+            {
+              "loop": true,
+              "speed": 600,
+              "autoplay": {
+                "delay": 5000
+              },
+              "slidesPerView": "auto",
+              "pagination": {
+                "el": ".swiper-pagination",
+                "type": "bullets",
+                "clickable": true
+              }
+            }
+          </script>
+          <div class="swiper-wrapper">
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <img src="assets/img/testimonials/testimonials-1.jpg" class="testimonial-img" alt="">
+                <h3>Carlos Ferreira</h3>
+                <h4>Dono de Restaurante</h4>
+                <div class="stars">
+                  <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>Gerenciar um restaurante envolve muitas tarefas ao mesmo tempo, e o atendimento ao cliente é crucial. A ZapLite facilitou muito nossa comunicação com os clientes, desde reservas até pedidos de informações sobre o menu. A configuração foi rápida e simples, e o suporte ao cliente é excelente. Recomendo a qualquer dono de restaurante que queira melhorar o serviço ao cliente.</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <img src="assets/img/testimonials/testimonials-2.jpg" class="testimonial-img" alt="">
+                <h3>Ricardo Almeida</h3>
+                <h4>Infoprodutor</h4>
+                <div class="stars">
+                  <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>Implementar a ZapLite para conversão dos clientes foi uma das melhores decisões que tomei. Agora, meus clientes recebem respostas automáticas e precisas às suas perguntas, o que reduziu drasticamente o número de conversas pendentes. Além disso, a facilidade de integração com o WhatsApp foi um grande diferencial. Recomendo a todos os vendedores online.</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+              </div>
+            </div><!-- End testimonial item -->
+
+            <div class="swiper-slide">
+              <div class="testimonial-item">
+                <img src="assets/img/testimonials/testimonials-3.jpg" class="testimonial-img" alt="">
+                <h3>Carla Luana</h3>
+                <h4>Proprietária de Salão de Beleza</h4>
+                <div class="stars">
+                  <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p>
+                  <i class="bi bi-quote quote-icon-left"></i>
+                  <span>O ZapLite simplificou muito o nosso atendimento ao cliente. Desde agendamentos até responder perguntas sobre nossos serviços, a plataforma lida com tudo de maneira eficiente. Meus clientes adoram a rapidez nas respostas, e eu economizo um tempo precioso. Não sei como funcionávamos sem isso antes!</span>
+                  <i class="bi bi-quote quote-icon-right"></i>
+                </p>
+              </div>
+            </div><!-- End testimonial item -->
+
+
+          </div>
+          <div class="swiper-pagination"></div>
+        </div>
+
+      </div>
+
+    </section><!-- /Testimonials Section -->
+
+
+    <!-- Faq Section -->
+    <section id="faq" class="faq section light-background">
+
+      <div class="container-fluid">
+
+        <div class="row gy-4">
+
+          <div class="col-lg-7 d-flex flex-column justify-content-center order-2 order-lg-1">
+
+            <div class="content px-xl-5" data-aos="fade-up" data-aos-delay="100">
+              <h3><span>FAQ - </span><strong>Duvidas Frequentes</strong></h3>
+              <p>
+                A baixo deixamos as dúvidas mais frequentes dos usuários, caso tenha alguma dúvida específica, entre em contato conosco.
+              </p>
+            </div>
+
+            <div class="faq-container px-xl-5" data-aos="fade-up" data-aos-delay="200">
+
+              <div class="faq-item faq-active">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>Como o ZapLite se conecta com o WhatsApp?</h3>
+                <div class="faq-content">
+                  <p>Após o cadastro, você receberá instruções passo a passo para conectar sua conta do WhatsApp ao nosso sistema. Basta seguir os passos no dashboard da ZapLite, que inclui a geração de um QR code que você precisa escanear com seu aplicativo WhatsApp para estabelecer a conexão.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <div class="faq-item">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>É necessário ter conhecimentos técnicos para usar a ZapLite?</h3>
+                <div class="faq-content">
+                  <p>Não, a ZapLite foi desenvolvida para ser intuitiva e fácil de usar. Nosso processo de configuração é simples e não requer conhecimentos técnicos avançados. Além disso, oferecemos tutoriais e suporte completo para garantir que você possa configurar e começar a usar a plataforma sem complicações.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+              <div class="faq-item">
+                <i class="faq-icon bi bi-question-circle"></i>
+                <h3>Como posso personalizar as respostas do ZapLite para refletir a identidade do meu negócio?</h3>
+                <div class="faq-content">
+                  <p>A ZapLite permite uma alta personalização das respostas. No dashboard, você pode definir o tom e o estilo das respostas para alinhar com a identidade do seu negócio. Além disso, você pode definir o estilo de resposta que o cliente receberá, garantindo que a comunicação com seus clientes seja única e personalizada.</p>
+                </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
+              </div><!-- End Faq item-->
+
+            </div>
+
+          </div>
+
+          <div class="col-lg-5 order-1 order-lg-2">
+            <img src="assets/img/faq.png" class="img-fluid" alt="" data-aos="zoom-in" data-aos-delay="100">
+          </div>
+        </div>
+
+      </div>
+
+    </section><!-- /Faq Section -->
+
+    
+
+  </main>
+
+  <footer id="footer" class="footer dark-background">
+
+    <div class="container footer-top">
+      <div class="row gy-4">
+        <div class="col-lg-4 col-md-6 footer-about">
+          <a href="index.html" class="logo d-flex align-items-center">
+            <span class="sitename">ZapLite</span>
+          </a>
+          <div class="footer-contact pt-3">
+            <p>Inteligência Artificial para WhatsApp</p>
+            <p>Com Preço Justo</p>
+            <p><strong>Email:</strong> <span>suportezaplite@zaplite.com.br</span></p>
+          </div>
+          <div class="social-links d-flex mt-4">
+            <a href=""><i class="bi bi-instagram"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-5 col-md-3">
+          <img src="assets/img/logo.png" alt="ZapLite Logo" height="100">
+        </div>
+        
+        <div class="col-lg-2 col-md-3 footer-links">
+          <h4>Links úteis</h4>
+          <ul>
+            <li><a href="#">Login</a></li>
+            <li><a href="#">Registro</a></li>
+            <li><a href="#">Contato</a></li>
+          </ul>
+        </div>
+
+      </div>
     </div>
-  </section>
-  
-  <footer class="text-center py-4">
-    <p>&copy; 2024 ZapLite. All rights reserved.</p>
+
+    <div class="container copyright text-center mt-4">
+      <p>© <span>Copyright</span> <strong class="px-1 sitename">ZapLite Brasil</strong> <span>All Rights Reserved</span></p>
+      <div class="credits">
+        <!-- All the links in the footer should remain intact. -->
+        <!-- You can delete the links only if you've purchased the pro version. -->
+        <!-- Licensing information: https://bootstrapmade.com/license/ -->
+        <!-- Purchase the pro version with working PHP/AJAX contact form: [buy-url] -->
+        Desenvolvido por <a href="https://zaplite.com.br">ZapLite</a>
+      </div>
+    </div>
+
   </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+
+  <!-- Main JS File -->
+  <script src="assets/js/main.js"></script>
+
 </body>
+
 </html>
