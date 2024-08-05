@@ -7,6 +7,7 @@ const axios = require('axios');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
+const PagSeguro = require('pagseguro'); // Adicionando biblioteca do PagSeguro
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,15 @@ let isProcessingQueue = false;
 const sessions = {};
 
 console.log('Initializing server...');
+
+// Configuração do PagSeguro
+const pagseguro = new PagSeguro({
+  email: 'luizgustavofmachado@gmail.com',
+  token: 'A094CC2E7F684869B7BBA1D9E55DDE1E',
+  mode: 'sandbox' // Modo de testes, troque para 'production' em produção
+});
+
+pagseguro.currency('BRL');
 
 // Use Helmet para definir cabeçalhos de segurança, incluindo CSP
 app.use(
@@ -47,30 +57,40 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-  console.log('Route /login accessed');
-});
-
 app.post('/register', async (req, res) => {
-  const { username, name, phone, email, password } = req.body;
-  if (username && name && phone && email && password) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const client = await pool.connect();
-    try {
-      await client.query(
-        'INSERT INTO users (username, name, phone, email, password) VALUES ($1, $2, $3, $4, $5)',
-        [username, name, phone, email, hashedPassword]
-      );
-      res.status(201).json({ success: true });
-    } catch (err) {
-      console.error('Error registering user:', err);
-      res.status(500).json({ success: false, message: 'Error registering user' });
-    } finally {
-      client.release();
-    }
-  } else {
-    res.status(400).json({ success: false, message: 'All fields are required' });
+  const { username, name, phone, email, password, plan } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const reference = `${email}_${new Date().getTime()}`;
+
+  const client = await pool.connect();
+  try {
+    await client.query(
+      'INSERT INTO users (username, name, phone, email, password, plan, reference, subscription_status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [username, name, phone, email, hashedPassword, plan, reference, 'inactive']
+    );
+
+    pagseguro.addItem({
+      id: plan,
+      description: `Plano ${plan}`,
+      amount: getPlanAmount(plan),
+      quantity: 1
+    });
+
+    pagseguro.setRedirectURL(`https://your-domain.com/success.html?reference=${reference}`);
+    pagseguro.setNotificationURL('https://your-domain.com/webhook');
+
+    pagseguro.send((err, response) => {
+      if (err) {
+        console.log('Error creating checkout session:', err);
+        return res.status(500).json({ success: false, message: 'Error creating checkout session' });
+      }
+      res.json({ success: true, paymentLink: response.redirect_url });
+    });
+  } catch (err) {
+    console.error('Error registering user:', err);
+    res.status(500).json({ success: false, message: 'Error registering user' });
+  } finally {
+    client.release();
   }
 });
 
@@ -81,6 +101,9 @@ app.post('/login', async (req, res) => {
     const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
+      if (user.subscription_status === 'inactive') {
+        return res.status(401).json({ success: false, message: 'Subscription inactive. Please renew your plan.' });
+      }
       res.status(200).json({ success: true, userId: user.id });
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -124,7 +147,6 @@ app.post('/get-prompt', async (req, res) => {
   }
 });
 
-
 app.post('/start-bot', (req, res) => {
   console.log('Received request to start bot');
   const { userId } = req.body;
@@ -138,17 +160,6 @@ app.post('/stop-bot', (req, res) => {
   stopBot(userId);
   res.json({ success: true });
 });
-
-app.post('/bot-status', (req, res) => {
-  const { userId } = req.body;
-  const sessionName = `session_${userId}`;
-  if (sessions[sessionName]) {
-    res.json({ success: true, status: 'connected' });
-  } else {
-    res.json({ success: true, status: 'not_connected' });
-  }
-});
-
 
 const cleanSession = (sessionName) => {
   const sessionDir = path.join(__dirname, 'tokens', sessionName);
@@ -328,3 +339,69 @@ wss.on('connection', (ws) => {
   ws.send(JSON.stringify({ status: 'connected_to_server' }));
   console.log('WebSocket client connected');
 });
+
+// Função para obter o valor do plano
+const getPlanAmount = (plan) => {
+  switch (plan) {
+    case 'monthly':
+      return '79.90';
+    case 'quarterly':
+      return '79.90';
+    case 'semiannual':
+      return '149.90';
+    case 'annual':
+      return '299.90';
+    default:
+      return '29.90';
+  }
+};
+
+// Webhook para PagSeguro
+app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
+  const notificationCode = req.body.notificationCode;
+
+  pagseguro.notification(notificationCode, (err, notification) => {
+    if (err) {
+      console.log('Error handling notification:', err);
+      return res.status(500).send(`Webhook Error: ${err.message}`);
+    }
+
+    const status = notification.status;
+    const reference = notification.reference;
+    const userId = reference.split('_')[0];
+
+    if (status === '3') { // Pagamento confirmado
+      handlePaymentSuccess(userId);
+    } else if (status === '7') { // Pagamento cancelado
+      handlePaymentFailure(userId);
+    }
+
+    res.sendStatus(200);
+  });
+});
+
+const handlePaymentSuccess = async (userId) => {
+  const client = await pool.connect();
+  try {
+    const subscriptionEnd = new Date();
+    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1); // Assumindo pagamento mensal
+    await client.query('UPDATE users SET subscription_status = $1, subscription_end = $2 WHERE id = $3', ['active', subscriptionEnd, userId]);
+    console.log(`User ${userId} subscription activated.`);
+  } catch (err) {
+    console.error('Error updating subscription status:', err);
+  } finally {
+    client.release();
+  }
+};
+
+const handlePaymentFailure = async (userId) => {
+  const client = await pool.connect();
+  try {
+    await client.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['inactive', userId]);
+    console.log(`User ${userId} subscription deactivated.`);
+  } catch (err) {
+    console.error('Error updating subscription status:', err);
+  } finally {
+    client.release();
+  }
+};
