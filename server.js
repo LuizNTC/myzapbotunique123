@@ -36,7 +36,6 @@ const pagseguro = new PagSeguro({
 });
 
 pagseguro.currency('BRL');
-pagseguro.setSandbox(true); // Habilitar modo sandbox
 
 // Use Helmet para definir cabeçalhos de segurança, incluindo CSP
 app.use(
