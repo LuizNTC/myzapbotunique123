@@ -61,7 +61,6 @@
       const registerResult = document.getElementById('registerResult');
       if (result.success) {
         registerResult.innerHTML = `Registration initiated! <a href="${result.paymentLink}" class="btn btn-success">Click here to pay</a>`;
-        // Redirecionar para a página de pagamento automaticamente
         window.location.href = result.paymentLink;
       } else {
         registerResult.textContent = 'Registration failed!';

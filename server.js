@@ -347,7 +347,11 @@ wss.on('connection', (ws) => {
 });
 
 // Criar sessão de pagamento no PagSeguro
+const xml2js = require('xml2js'); // Adicione a biblioteca xml2js para parsear o XML
+
+// Criar sessão de pagamento no PagSeguro
 app.post('/create-checkout-session', async (req, res) => {
+  console.log('/create-checkout-session endpoint hit');
   const { username, name, phone, email, password, plan } = req.body;
   if (username && name && phone && email && password && plan) {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -371,13 +375,25 @@ app.post('/create-checkout-session', async (req, res) => {
       pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
       pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
 
-      pagseguro.send((err, response) => {
+      pagseguro.send(async (err, response) => {
         if (err) {
           console.log('Error creating checkout session:', err);
           return res.status(500).json({ success: false, message: 'Error creating checkout session' });
         }
-        console.log('PagSeguro response:', response); // Adicionando log
-        res.json({ success: true, paymentLink: response.redirect_url });
+        
+        console.log('PagSeguro response:', response);
+
+        // Parse the XML response to extract the checkout code
+        xml2js.parseString(response, (parseErr, result) => {
+          if (parseErr) {
+            console.log('Error parsing PagSeguro response:', parseErr);
+            return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
+          }
+
+          const checkoutCode = result.checkout.code[0];
+          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
+          res.json({ success: true, paymentLink });
+        });
       });
     } catch (err) {
       console.error('Error registering user:', err);
@@ -389,6 +405,7 @@ app.post('/create-checkout-session', async (req, res) => {
     res.status(400).json({ success: false, message: 'All fields are required' });
   }
 });
+
 
 
 // Webhook para PagSeguro
