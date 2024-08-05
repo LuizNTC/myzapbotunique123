@@ -8,6 +8,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const PagSeguro = require('pagseguro'); // Adicionando biblioteca do PagSeguro
+const xml2js = require('xml2js'); // Adicionando a biblioteca xml2js para parsear o XML
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,7 @@ const pagseguro = new PagSeguro({
 });
 
 pagseguro.currency('BRL');
+pagseguro.setSandbox(true); // Habilitar modo sandbox
 
 // Use Helmet para definir cabeçalhos de segurança, incluindo CSP
 app.use(
@@ -59,7 +61,7 @@ app.get('/', (req, res) => {
 
 app.post('/register', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
-  console.log('/register endpoint hit'); // Adicionando log
+  console.log('/register endpoint hit');
   if (username && name && phone && email && password && plan) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
@@ -75,33 +77,32 @@ app.post('/register', async (req, res) => {
       pagseguro.addItem({
         id: plan,
         description: `Plano ${plan}`,
-        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : '299.90',
+        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : plan === 'semiannually' ? '149.90' : '299.90',
         quantity: 1
       });
 
       pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
       pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
 
-      pagseguro.send((err, response) => {
+      pagseguro.send(async (err, response) => {
         if (err) {
           console.log('Error creating checkout session:', err);
           return res.status(500).json({ success: false, message: 'Error creating checkout session' });
         }
+        
+        console.log('PagSeguro response:', response);
 
-        console.log('PagSeguro response:', response); // Log completo da resposta
+        // Parse the XML response to extract the checkout code
+        xml2js.parseString(response, (parseErr, result) => {
+          if (parseErr) {
+            console.log('Error parsing PagSeguro response:', parseErr);
+            return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
+          }
 
-        const responseXml = response.xml;
-        const match = responseXml.match(/<code>([^<]+)<\/code>/);
-        const paymentCode = match ? match[1] : null;
-
-        if (paymentCode) {
-          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${paymentCode}`;
-          console.log('Payment link:', paymentLink); // Log do link de pagamento
+          const checkoutCode = result.checkout.code[0];
+          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
           res.json({ success: true, paymentLink });
-        } else {
-          console.log('Error: Payment code not found in response');
-          res.status(500).json({ success: false, message: 'Error creating checkout session' });
-        }
+        });
       });
     } catch (err) {
       console.error('Error registering user:', err);
@@ -113,9 +114,6 @@ app.post('/register', async (req, res) => {
     res.status(400).json({ success: false, message: 'All fields are required' });
   }
 });
-
-
-// Adicione mais logs conforme necessário para outras rotas
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -361,9 +359,6 @@ wss.on('connection', (ws) => {
 });
 
 // Criar sessão de pagamento no PagSeguro
-const xml2js = require('xml2js'); // Adicione a biblioteca xml2js para parsear o XML
-
-// Criar sessão de pagamento no PagSeguro
 app.post('/create-checkout-session', async (req, res) => {
   console.log('/create-checkout-session endpoint hit');
   const { username, name, phone, email, password, plan } = req.body;
@@ -382,7 +377,7 @@ app.post('/create-checkout-session', async (req, res) => {
       pagseguro.addItem({
         id: plan,
         description: `Plano ${plan}`,
-        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : '299.90',
+        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : plan === 'semiannually' ? '149.90' : '299.90',
         quantity: 1
       });
 
@@ -420,11 +415,9 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-
-
 // Webhook para PagSeguro
 app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
-  console.log('Webhook received:', req.body); // Log para ver o corpo da notificação recebida
+  console.log('Webhook received:', req.body);
 
   const notificationCode = req.body.notificationCode;
 
@@ -434,7 +427,7 @@ app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
       return res.status(500).send(`Webhook Error: ${err.message}`);
     }
 
-    console.log('Notification:', notification); // Log da notificação completa recebida
+    console.log('Notification:', notification);
 
     const status = notification.status;
     const reference = notification.reference;
@@ -449,8 +442,6 @@ app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
     res.sendStatus(200);
   });
 });
-
-
 
 const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
