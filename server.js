@@ -424,6 +424,8 @@ app.post('/create-checkout-session', async (req, res) => {
 
 // Webhook para PagSeguro
 app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
+  console.log('Webhook received:', req.body); // Log para ver o corpo da notificação recebida
+
   const notificationCode = req.body.notificationCode;
 
   pagseguro.notification(notificationCode, (err, notification) => {
@@ -431,6 +433,8 @@ app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
       console.log('Error handling notification:', err);
       return res.status(500).send(`Webhook Error: ${err.message}`);
     }
+
+    console.log('Notification:', notification); // Log da notificação completa recebida
 
     const status = notification.status;
     const reference = notification.reference;
@@ -445,6 +449,7 @@ app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
     res.sendStatus(200);
   });
 });
+
 
 
 const handlePaymentSuccess = async (userId) => {
