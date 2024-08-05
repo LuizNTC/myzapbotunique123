@@ -59,38 +59,43 @@ app.get('/', (req, res) => {
 
 app.post('/register', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const reference = `${email}_${new Date().getTime()}`;
+  if (username && name && phone && email && password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'INSERT INTO users (username, name, phone, email, password) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+        [username, name, phone, email, hashedPassword]
+      );
 
-  const client = await pool.connect();
-  try {
-    await client.query(
-      'INSERT INTO users (username, name, phone, email, password, plan, reference, subscription_status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-      [username, name, phone, email, hashedPassword, plan, reference, 'inactive']
-    );
+      const userId = result.rows[0].id;
+      const reference = `${userId}_${new Date().getTime()}`;
 
-    pagseguro.addItem({
-      id: plan,
-      description: `Plano ${plan}`,
-      amount: getPlanAmount(plan),
-      quantity: 1
-    });
+      pagseguro.addItem({
+        id: plan,
+        description: `Plano ${plan}`,
+        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : '299.90',
+        quantity: 1
+      });
 
-    pagseguro.setRedirectURL(`https://your-domain.com/success.html?reference=${reference}`);
-    pagseguro.setNotificationURL('https://your-domain.com/webhook');
+      pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
+      pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
 
-    pagseguro.send((err, response) => {
-      if (err) {
-        console.log('Error creating checkout session:', err);
-        return res.status(500).json({ success: false, message: 'Error creating checkout session' });
-      }
-      res.json({ success: true, paymentLink: response.redirect_url });
-    });
-  } catch (err) {
-    console.error('Error registering user:', err);
-    res.status(500).json({ success: false, message: 'Error registering user' });
-  } finally {
-    client.release();
+      pagseguro.send((err, response) => {
+        if (err) {
+          console.log('Error creating checkout session:', err);
+          return res.status(500).json({ success: false, message: 'Error creating checkout session' });
+        }
+        res.json({ success: true, paymentLink: response.redirect_url });
+      });
+    } catch (err) {
+      console.error('Error registering user:', err);
+      res.status(500).json({ success: false, message: 'Error registering user' });
+    } finally {
+      client.release();
+    }
+  } else {
+    res.status(400).json({ success: false, message: 'All fields are required' });
   }
 });
 
@@ -101,9 +106,6 @@ app.post('/login', async (req, res) => {
     const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
-      if (user.subscription_status === 'inactive') {
-        return res.status(401).json({ success: false, message: 'Subscription inactive. Please renew your plan.' });
-      }
       res.status(200).json({ success: true, userId: user.id });
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -340,21 +342,48 @@ wss.on('connection', (ws) => {
   console.log('WebSocket client connected');
 });
 
-// Função para obter o valor do plano
-const getPlanAmount = (plan) => {
-  switch (plan) {
-    case 'monthly':
-      return '79.90';
-    case 'quarterly':
-      return '79.90';
-    case 'semiannual':
-      return '149.90';
-    case 'annual':
-      return '299.90';
-    default:
-      return '29.90';
+// Criar sessão de pagamento no PagSeguro
+app.post('/create-checkout-session', async (req, res) => {
+  const { username, name, phone, email, password, plan } = req.body;
+  if (username && name && phone && email && password && plan) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+        [username, name, phone, email, hashedPassword, 'pending']
+      );
+
+      const userId = result.rows[0].id;
+      const reference = `${userId}_${new Date().getTime()}`;
+
+      pagseguro.addItem({
+        id: plan,
+        description: `Plano ${plan}`,
+        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : '299.90',
+        quantity: 1
+      });
+
+      pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
+      pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
+
+      pagseguro.send((err, response) => {
+        if (err) {
+          console.log('Error creating checkout session:', err);
+          return res.status(500).json({ success: false, message: 'Error creating checkout session' });
+        }
+        res.json({ success: true, paymentLink: response.redirect_url });
+      });
+    } catch (err) {
+      console.error('Error registering user:', err);
+      res.status(500).json({ success: false, message: 'Error registering user' });
+    } finally {
+      client.release();
+    }
+  } else {
+    res.status(400).json({ success: false, message: 'All fields are required' });
   }
-};
+});
 
 // Webhook para PagSeguro
 app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
@@ -383,9 +412,7 @@ app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
 const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
   try {
-    const subscriptionEnd = new Date();
-    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1); // Assumindo pagamento mensal
-    await client.query('UPDATE users SET subscription_status = $1, subscription_end = $2 WHERE id = $3', ['active', subscriptionEnd, userId]);
+    await client.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['active', userId]);
     console.log(`User ${userId} subscription activated.`);
   } catch (err) {
     console.error('Error updating subscription status:', err);
