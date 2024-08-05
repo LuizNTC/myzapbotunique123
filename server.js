@@ -349,7 +349,6 @@ wss.on('connection', (ws) => {
 // Criar sessão de pagamento no PagSeguro
 app.post('/create-checkout-session', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
-  console.log('/create-checkout-session endpoint hit'); // Adicionando log
   if (username && name && phone && email && password && plan) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
@@ -377,7 +376,7 @@ app.post('/create-checkout-session', async (req, res) => {
           console.log('Error creating checkout session:', err);
           return res.status(500).json({ success: false, message: 'Error creating checkout session' });
         }
-        console.log('Checkout session created successfully'); // Adicionando log
+        console.log('PagSeguro response:', response); // Adicionando log
         res.json({ success: true, paymentLink: response.redirect_url });
       });
     } catch (err) {
@@ -391,9 +390,9 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
+
 // Webhook para PagSeguro
 app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
-  console.log('/webhook endpoint hit'); // Adicionando log
   const notificationCode = req.body.notificationCode;
 
   pagseguro.notification(notificationCode, (err, notification) => {
@@ -415,6 +414,7 @@ app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
     res.sendStatus(200);
   });
 });
+
 
 const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
