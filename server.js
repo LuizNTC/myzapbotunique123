@@ -30,8 +30,8 @@ console.log('Initializing server...');
 
 // Configuração do PagSeguro
 const pagseguro = new PagSeguro({
-  email: 'v32711407591884729085@sandbox.pagseguro.com.br',
-  token: 'A094CC2E7F684869B7BBA1D9E55DDE1E', // Substitua pelo token correto do vendedor
+  email: 'luizgustavofmachado@gmail.com',
+  token: 'A094CC2E7F684869B7BBA1D9E55DDE1E',
   mode: 'sandbox' // Modo de testes, troque para 'production' em produção
 });
 
@@ -62,9 +62,15 @@ app.post('/register', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
   console.log('/register endpoint hit'); // Adicionando log
   if (username && name && phone && email && password && plan) {
-    const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
     try {
+      // Verificar se o email já existe
+      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'Email already registered' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
       const result = await client.query(
         'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
         [username, name, phone, email, hashedPassword, 'pending']
@@ -417,6 +423,12 @@ app.post('/create-checkout-session', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
     try {
+      // Verificar se o email já existe
+      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'Email already registered' });
+      }
+
       const result = await client.query(
         'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
         [username, name, phone, email, hashedPassword, 'pending']
