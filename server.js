@@ -7,7 +7,8 @@ const axios = require('axios');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
-const mercadopago = require('mercadopago');
+const PagSeguro = require('pagseguro');
+const xml2js = require('xml2js'); // Biblioteca para parsear o XML
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,11 +28,16 @@ const sessions = {};
 
 console.log('Initializing server...');
 
-// Configuração do MercadoPago
-mercadopago.configurations = {
-  access_token: 'APP_USR-1051520557198491-080611-741663b12c0895c6b8f9f252eee04bbf-268303205'
-};
+// Configuração do PagSeguro
+const pagseguro = new PagSeguro({
+  email: 'luizgustavofmachado@gmail.com',
+  token: 'A094CC2E7F684869B7BBA1D9E55DDE1E',
+  mode: 'sandbox' // Modo de testes, troque para 'production' em produção
+});
 
+pagseguro.currency('BRL');
+
+// Use Helmet para definir cabeçalhos de segurança, incluindo CSP
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -52,19 +58,14 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-  console.log('Route /login accessed');
-});
-
 app.post('/register', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
-  console.log('/register endpoint hit');
-  console.log('Received data:', req.body);
-
+  console.log('/register endpoint hit'); // Adicionando log
+  console.log('Received data:', req.body); // Logando os dados recebidos
   if (username && name && phone && email && password && plan) {
     const client = await pool.connect();
     try {
+      // Verificar se o email já existe
       const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
       if (emailCheck.rows.length > 0) {
         return res.status(400).json({ success: false, message: 'Email already registered' });
@@ -79,28 +80,36 @@ app.post('/register', async (req, res) => {
       const userId = result.rows[0].id;
       const reference = `${userId}_${new Date().getTime()}`;
 
-      const preference = {
-        items: [
-          {
-            title: `Plano ${plan}`,
-            unit_price: plan === 'monthly' ? 29.90 : plan === 'quarterly' ? 79.90 : plan === 'semiannually' ? 149.90 : 299.90,
-            quantity: 1,
-          },
-        ],
-        external_reference: reference,
-        notification_url: 'https://zaplite.com.br/webhook',
-        back_urls: {
-          success: `https://zaplite.com.br/success.html?reference=${reference}`,
-          failure: 'https://zaplite.com.br/failure.html',
-          pending: 'https://zaplite.com.br/pending.html',
-        },
-        auto_return: 'approved',
-      };
+      pagseguro.addItem({
+        id: plan,
+        description: `Plano ${plan}`,
+        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : plan === 'semiannually' ? '149.90' : '299.90',
+        quantity: 1
+      });
 
-      const response = await mercadopago.preferences.create(preference);
-      const paymentLink = response.body.init_point;
+      pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
+      pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
 
-      res.json({ success: true, paymentLink });
+      pagseguro.send(async (err, response) => {
+        if (err) {
+          console.log('Error creating checkout session:', err);
+          return res.status(500).json({ success: false, message: 'Error creating checkout session' });
+        }
+        
+        console.log('PagSeguro response:', response);
+
+        // Parse the XML response to extract the checkout code
+        xml2js.parseString(response, (parseErr, result) => {
+          if (parseErr) {
+            console.log('Error parsing PagSeguro response:', parseErr);
+            return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
+          }
+
+          const checkoutCode = result.checkout.code[0];
+          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
+          res.json({ success: true, paymentLink });
+        });
+      });
     } catch (err) {
       console.error('Error registering user:', err);
       res.status(500).json({ success: false, message: 'Error registering user' });
@@ -119,9 +128,6 @@ app.post('/login', async (req, res) => {
     const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
-      if (user.subscription_status === 'inactive') {
-        return res.status(401).json({ success: false, message: 'Subscription inactive. Please renew your plan.' });
-      }
       res.status(200).json({ success: true, userId: user.id });
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -358,30 +364,37 @@ wss.on('connection', (ws) => {
   console.log('WebSocket client connected');
 });
 
-// Webhook para MercadoPago
-app.post('/webhook', express.json(), (req, res) => {
+// Webhook para PagSeguro
+app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
   console.log('Webhook received:', req.body); // Log para ver o corpo da notificação recebida
 
-  const payment = req.body;
+  const notificationCode = req.body.notificationCode;
 
-  if (payment.type === 'payment' && payment.action === 'payment.created') {
-    handlePaymentSuccess(payment.data.id);
-  } else if (payment.type === 'payment' && payment.action === 'payment.updated') {
-    if (payment.data.status === 'approved') {
-      handlePaymentSuccess(payment.data.id);
-    } else if (payment.data.status === 'rejected') {
-      handlePaymentFailure(payment.data.id);
+  pagseguro.notification(notificationCode, (err, notification) => {
+    if (err) {
+      console.log('Error handling notification:', err);
+      return res.status(500).send(`Webhook Error: ${err.message}`);
     }
-  }
 
-  res.sendStatus(200);
+    console.log('Notification:', notification); // Log da notificação completa recebida
+
+    const status = notification.status;
+    const reference = notification.reference;
+    const userId = reference.split('_')[0];
+
+    if (status === '3') { // Pagamento confirmado
+      handlePaymentSuccess(userId);
+    } else if (status === '7') { // Pagamento cancelado
+      handlePaymentFailure(userId);
+    }
+
+    res.sendStatus(200);
+  });
 });
 
-const handlePaymentSuccess = async (paymentId) => {
+const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
   try {
-    const result = await mercadopago.payment.findById(paymentId);
-    const userId = result.response.external_reference.split('_')[0];
     await client.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['active', userId]);
     console.log(`User ${userId} subscription activated.`);
   } catch (err) {
@@ -391,11 +404,9 @@ const handlePaymentSuccess = async (paymentId) => {
   }
 };
 
-const handlePaymentFailure = async (paymentId) => {
+const handlePaymentFailure = async (userId) => {
   const client = await pool.connect();
   try {
-    const result = await mercadopago.payment.findById(paymentId);
-    const userId = result.response.external_reference.split('_')[0];
     await client.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['inactive', userId]);
     console.log(`User ${userId} subscription deactivated.`);
   } catch (err) {
@@ -405,7 +416,7 @@ const handlePaymentFailure = async (paymentId) => {
   }
 };
 
-// Criar sessão de pagamento no MercadoPago
+// Criar sessão de pagamento no PagSeguro
 app.post('/create-checkout-session', async (req, res) => {
   console.log('/create-checkout-session endpoint hit');
   const { username, name, phone, email, password, plan } = req.body;
@@ -414,6 +425,7 @@ app.post('/create-checkout-session', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
     try {
+      // Verificar se o email já existe
       const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
       if (emailCheck.rows.length > 0) {
         return res.status(400).json({ success: false, message: 'Email already registered' });
@@ -427,32 +439,39 @@ app.post('/create-checkout-session', async (req, res) => {
       const userId = result.rows[0].id;
       const reference = `${userId}_${new Date().getTime()}`;
 
-      const preference = {
-        items: [
-          {
-            title: `Plano ${plan}`,
-            unit_price: plan === 'monthly' ? 29.90 : plan === 'quarterly' ? 79.90 : plan === 'semiannually' ? 149.90 : 299.90,
-            quantity: 1,
-          },
-        ],
-        external_reference: reference,
-        notification_url: 'https://zaplite.com.br/webhook',
-        back_urls: {
-          success: `https://zaplite.com.br/success.html?reference=${reference}`,
-          failure: 'https://zaplite.com.br/failure.html',
-          pending: 'https://zaplite.com.br/pending.html',
-        },
-        auto_return: 'approved',
-      };
+      pagseguro.addItem({
+        id: plan,
+        description: `Plano ${plan}`,
+        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : plan === 'semiannually' ? '149.90' : '299.90',
+        quantity: 1
+      });
 
-      const response = await mercadopago.preferences.create(preference);
-      const paymentLink = response.body.init_point;
+      pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
+      pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
 
-      res.json({ success: true, paymentLink });
+      pagseguro.send(async (err, response) => {
+        if (err) {
+          console.log('Error creating checkout session:', err);
+          return res.status(500).json({ success: false, message: 'Error creating checkout session' });
+        }
+        
+        console.log('PagSeguro response:', response);
 
+        // Parse the XML response to extract the checkout code
+        xml2js.parseString(response, (parseErr, result) => {
+          if (parseErr) {
+            console.log('Error parsing PagSeguro response:', parseErr);
+            return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
+          }
+
+          const checkoutCode = result.checkout.code[0];
+          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
+          res.json({ success: true, paymentLink });
+        });
+      });
     } catch (err) {
-      console.error('Error creating checkout session:', err);
-      res.status(500).json({ success: false, message: 'Error creating checkout session' });
+      console.error('Error registering user:', err);
+      res.status(500).json({ success: false, message: 'Error registering user' });
     } finally {
       client.release();
     }

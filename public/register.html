@@ -52,18 +52,12 @@
       const email = document.getElementById('registerEmail').value;
       const password = document.getElementById('registerPassword').value;
       const plan = document.getElementById('plan').value;
-      
-      console.log('Submitting form with data:', { username, name, phone, email, password, plan });
-      
       const response = await fetch('/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, name, phone, email, password, plan })
       });
-      
       const result = await response.json();
-      console.log('Response from server:', result);
-      
       const registerResult = document.getElementById('registerResult');
       if (result.success) {
         registerResult.innerHTML = `Registration initiated! <a href="${result.paymentLink}" class="btn btn-success">Click here to pay</a>`;
