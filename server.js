@@ -28,11 +28,10 @@ const sessions = {};
 console.log('Initializing server...');
 
 // Configuração do MercadoPago
-mercadopago.configure({
-  access_token: 'APP_USR-1051520557198491-080611-741663b12c0895c6b8f9f252eee04bbf-268303205' // Substitua pelo seu Access Token do MercadoPago (teste ou produção conforme necessário)
-});
+mercadopago.configurations = {
+  access_token: 'APP_USR-1051520557198491-080611-741663b12c0895c6b8f9f252eee04bbf-268303205'
+};
 
-// Use Helmet para definir cabeçalhos de segurança, incluindo CSP
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -56,10 +55,11 @@ app.get('/', (req, res) => {
 app.post('/register', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
   console.log('/register endpoint hit');
+  console.log('Received data:', req.body);
+
   if (username && name && phone && email && password && plan) {
     const client = await pool.connect();
     try {
-      // Verificar se o email já existe
       const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
       if (emailCheck.rows.length > 0) {
         return res.status(400).json({ success: false, message: 'Email already registered' });
@@ -72,29 +72,30 @@ app.post('/register', async (req, res) => {
       );
 
       const userId = result.rows[0].id;
+      const reference = `${userId}_${new Date().getTime()}`;
 
-      // Configuração do pagamento no MercadoPago
       const preference = {
-        items: [{
-          title: `Plano ${plan}`,
-          unit_price: plan === 'monthly' ? 29.90 : plan === 'quarterly' ? 79.90 : plan === 'semiannually' ? 149.90 : 299.90,
-          quantity: 1,
-        }],
-        payer: {
-          email: email,
-        },
+        items: [
+          {
+            title: `Plano ${plan}`,
+            unit_price: plan === 'monthly' ? 29.90 : plan === 'quarterly' ? 79.90 : plan === 'semiannually' ? 149.90 : 299.90,
+            quantity: 1,
+          },
+        ],
+        external_reference: reference,
+        notification_url: 'https://zaplite.com.br/webhook',
         back_urls: {
-          success: `https://zaplite.com.br/success.html?user_id=${userId}`,
-          failure: `https://zaplite.com.br/failure.html?user_id=${userId}`,
-          pending: `https://zaplite.com.br/pending.html?user_id=${userId}`,
+          success: `https://zaplite.com.br/success.html?reference=${reference}`,
+          failure: 'https://zaplite.com.br/failure.html',
+          pending: 'https://zaplite.com.br/pending.html',
         },
         auto_return: 'approved',
-        external_reference: userId.toString(),
-        notification_url: 'https://zaplite.com.br/webhook'
       };
 
       const response = await mercadopago.preferences.create(preference);
-      res.json({ success: true, paymentLink: response.body.init_point });
+      const paymentLink = response.body.init_point;
+
+      res.json({ success: true, paymentLink });
     } catch (err) {
       console.error('Error registering user:', err);
       res.status(500).json({ success: false, message: 'Error registering user' });
@@ -113,6 +114,9 @@ app.post('/login', async (req, res) => {
     const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
+      if (user.subscription_status === 'inactive') {
+        return res.status(401).json({ success: false, message: 'Subscription inactive. Please renew your plan.' });
+      }
       res.status(200).json({ success: true, userId: user.id });
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -239,11 +243,6 @@ const processQueue = () => {
 
 const startBot = async (userId) => {
   const sessionName = `session_${userId}`;
-  if (sessions[sessionName]) {
-    console.log(`Bot already started for user ${userId}`);
-    return;
-  }
-
   cleanSession(sessionName);
   const client = await pool.connect();
   try {
@@ -350,30 +349,29 @@ wss.on('connection', (ws) => {
 });
 
 // Webhook para MercadoPago
-app.post('/webhook', async (req, res) => {
+app.post('/webhook', express.json(), (req, res) => {
   console.log('Webhook received:', req.body);
 
   const payment = req.body;
 
-  if (payment.type === 'payment') {
-    const userId = payment.data.external_reference;
-    const status = payment.data.status;
-
-    if (status === 'approved') {
-      await handlePaymentSuccess(userId);
-    } else if (status === 'cancelled' || status === 'rejected') {
-      await handlePaymentFailure(userId);
+  if (payment.type === 'payment' && payment.action === 'payment.created') {
+    handlePaymentSuccess(payment.data.id);
+  } else if (payment.type === 'payment' && payment.action === 'payment.updated') {
+    if (payment.data.status === 'approved') {
+      handlePaymentSuccess(payment.data.id);
+    } else if (payment.data.status === 'rejected') {
+      handlePaymentFailure(payment.data.id);
     }
-
-    res.sendStatus(200);
-  } else {
-    res.sendStatus(400);
   }
+
+  res.sendStatus(200);
 });
 
-const handlePaymentSuccess = async (userId) => {
+const handlePaymentSuccess = async (paymentId) => {
   const client = await pool.connect();
   try {
+    const result = await mercadopago.payment.findById(paymentId);
+    const userId = result.response.external_reference.split('_')[0];
     await client.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['active', userId]);
     console.log(`User ${userId} subscription activated.`);
   } catch (err) {
@@ -383,14 +381,15 @@ const handlePaymentSuccess = async (userId) => {
   }
 };
 
-const handlePaymentFailure = async (userId) => {
+const handlePaymentFailure = async (paymentId) => {
   const client = await pool.connect();
   try {
+    const result = await mercadopago.payment.findById(paymentId);
+    const userId = result.response.external_reference.split('_')[0];
     await client.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['inactive', userId]);
     console.log(`User ${userId} subscription deactivated.`);
   } catch (err) {
     console.error('Error updating subscription status:', err);
   } finally {
     client.release();
-  }
-};
+  }};
