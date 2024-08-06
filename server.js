@@ -52,6 +52,11 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  console.log('Route /login accessed');
+});
+
 app.post('/register', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
   console.log('/register endpoint hit');
@@ -243,6 +248,11 @@ const processQueue = () => {
 
 const startBot = async (userId) => {
   const sessionName = `session_${userId}`;
+  if (sessions[sessionName]) {
+    console.log(`Bot already started for user ${userId}`);
+    return;
+  }
+
   cleanSession(sessionName);
   const client = await pool.connect();
   try {
@@ -350,7 +360,7 @@ wss.on('connection', (ws) => {
 
 // Webhook para MercadoPago
 app.post('/webhook', express.json(), (req, res) => {
-  console.log('Webhook received:', req.body);
+  console.log('Webhook received:', req.body); // Log para ver o corpo da notificação recebida
 
   const payment = req.body;
 
@@ -392,4 +402,61 @@ const handlePaymentFailure = async (paymentId) => {
     console.error('Error updating subscription status:', err);
   } finally {
     client.release();
-  }};
+  }
+};
+
+// Criar sessão de pagamento no MercadoPago
+app.post('/create-checkout-session', async (req, res) => {
+  console.log('/create-checkout-session endpoint hit');
+  const { username, name, phone, email, password, plan } = req.body;
+  console.log('Received data:', req.body); // Logando os dados recebidos
+  if (username && name && phone && email && password && plan) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const client = await pool.connect();
+    try {
+      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'Email already registered' });
+      }
+
+      const result = await client.query(
+        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+        [username, name, phone, email, hashedPassword, 'pending']
+      );
+
+      const userId = result.rows[0].id;
+      const reference = `${userId}_${new Date().getTime()}`;
+
+      const preference = {
+        items: [
+          {
+            title: `Plano ${plan}`,
+            unit_price: plan === 'monthly' ? 29.90 : plan === 'quarterly' ? 79.90 : plan === 'semiannually' ? 149.90 : 299.90,
+            quantity: 1,
+          },
+        ],
+        external_reference: reference,
+        notification_url: 'https://zaplite.com.br/webhook',
+        back_urls: {
+          success: `https://zaplite.com.br/success.html?reference=${reference}`,
+          failure: 'https://zaplite.com.br/failure.html',
+          pending: 'https://zaplite.com.br/pending.html',
+        },
+        auto_return: 'approved',
+      };
+
+      const response = await mercadopago.preferences.create(preference);
+      const paymentLink = response.body.init_point;
+
+      res.json({ success: true, paymentLink });
+
+    } catch (err) {
+      console.error('Error creating checkout session:', err);
+      res.status(500).json({ success: false, message: 'Error creating checkout session' });
+    } finally {
+      client.release();
+    }
+  } else {
+    res.status(400).json({ success: false, message: 'All fields are required' });
+  }
+});
