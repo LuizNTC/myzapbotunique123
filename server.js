@@ -8,7 +8,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const PagSeguro = require('pagseguro');
-const xml2js = require('xml2js'); // Adicione a biblioteca xml2js para parsear o XML
+const xml2js = require('xml2js'); // Biblioteca para parsear o XML
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,7 +21,7 @@ const pool = new Pool({
   }
 });
 
-const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I";
+const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I"; // Adicione sua chave de API aqui
 const requestQueue = [];
 let isProcessingQueue = false;
 const sessions = {};
@@ -30,8 +30,8 @@ console.log('Initializing server...');
 
 // Configuração do PagSeguro
 const pagseguro = new PagSeguro({
-  email: 'luizgustavofmachado@gmail.com',
-  token: 'A094CC2E7F684869B7BBA1D9E55DDE1E',
+  email: 'v32711407591884729085@sandbox.pagseguro.com.br',
+  token: 'A094CC2E7F684869B7BBA1D9E55DDE1E', // Substitua pelo token correto do vendedor
   mode: 'sandbox' // Modo de testes, troque para 'production' em produção
 });
 
@@ -408,3 +408,60 @@ const handlePaymentFailure = async (userId) => {
     client.release();
   }
 };
+
+// Criar sessão de pagamento no PagSeguro
+app.post('/create-checkout-session', async (req, res) => {
+  console.log('/create-checkout-session endpoint hit');
+  const { username, name, phone, email, password, plan } = req.body;
+  if (username && name && phone && email && password && plan) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+        [username, name, phone, email, hashedPassword, 'pending']
+      );
+
+      const userId = result.rows[0].id;
+      const reference = `${userId}_${new Date().getTime()}`;
+
+      pagseguro.addItem({
+        id: plan,
+        description: `Plano ${plan}`,
+        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : plan === 'semiannually' ? '149.90' : '299.90',
+        quantity: 1
+      });
+
+      pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
+      pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
+
+      pagseguro.send(async (err, response) => {
+        if (err) {
+          console.log('Error creating checkout session:', err);
+          return res.status(500).json({ success: false, message: 'Error creating checkout session' });
+        }
+        
+        console.log('PagSeguro response:', response);
+
+        // Parse the XML response to extract the checkout code
+        xml2js.parseString(response, (parseErr, result) => {
+          if (parseErr) {
+            console.log('Error parsing PagSeguro response:', parseErr);
+            return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
+          }
+
+          const checkoutCode = result.checkout.code[0];
+          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
+          res.json({ success: true, paymentLink });
+        });
+      });
+    } catch (err) {
+      console.error('Error registering user:', err);
+      res.status(500).json({ success: false, message: 'Error registering user' });
+    } finally {
+      client.release();
+    }
+  } else {
+    res.status(400).json({ success: false, message: 'All fields are required' });
+  }
+});
