@@ -61,6 +61,7 @@ app.get('/', (req, res) => {
 app.post('/register', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;
   console.log('/register endpoint hit'); // Adicionando log
+  console.log('Received data:', req.body); // Logando os dados recebidos
   if (username && name && phone && email && password && plan) {
     const client = await pool.connect();
     try {
@@ -98,14 +99,14 @@ app.post('/register', async (req, res) => {
         console.log('PagSeguro response:', response);
 
         // Parse the XML response to extract the checkout code
-        xml2js.parseString(response.xml, (parseErr, result) => {
+        xml2js.parseString(response, (parseErr, result) => {
           if (parseErr) {
             console.log('Error parsing PagSeguro response:', parseErr);
             return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
           }
 
           const checkoutCode = result.checkout.code[0];
-          const paymentLink = `https://sandbox.pagbank.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
+          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
           res.json({ success: true, paymentLink });
         });
       });
@@ -367,39 +368,27 @@ wss.on('connection', (ws) => {
 app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
   console.log('Webhook received:', req.body); // Log para ver o corpo da notificação recebida
 
-  xml2js.parseString(req.body, (err, result) => {
+  const notificationCode = req.body.notificationCode;
+
+  pagseguro.notification(notificationCode, (err, notification) => {
     if (err) {
-      console.log('Error parsing webhook:', err);
+      console.log('Error handling notification:', err);
       return res.status(500).send(`Webhook Error: ${err.message}`);
     }
 
-    const notificationCode = result.notificationCode[0];
-    const notificationType = result.notificationType[0];
+    console.log('Notification:', notification); // Log da notificação completa recebida
 
-    if (notificationType === 'transaction') {
-      pagseguro.notification(notificationCode, (err, notification) => {
-        if (err) {
-          console.log('Error handling notification:', err);
-          return res.status(500).send(`Webhook Error: ${err.message}`);
-        }
+    const status = notification.status;
+    const reference = notification.reference;
+    const userId = reference.split('_')[0];
 
-        console.log('Notification:', notification); // Log da notificação completa recebida
-
-        const status = notification.status;
-        const reference = notification.reference;
-        const userId = reference.split('_')[0];
-
-        if (status === '3') { // Pagamento confirmado
-          handlePaymentSuccess(userId);
-        } else if (status === '7') { // Pagamento cancelado
-          handlePaymentFailure(userId);
-        }
-
-        res.sendStatus(200);
-      });
-    } else {
-      res.sendStatus(400);
+    if (status === '3') { // Pagamento confirmado
+      handlePaymentSuccess(userId);
+    } else if (status === '7') { // Pagamento cancelado
+      handlePaymentFailure(userId);
     }
+
+    res.sendStatus(200);
   });
 });
 
@@ -431,6 +420,7 @@ const handlePaymentFailure = async (userId) => {
 app.post('/create-checkout-session', async (req, res) => {
   console.log('/create-checkout-session endpoint hit');
   const { username, name, phone, email, password, plan } = req.body;
+  console.log('Received data:', req.body); // Logando os dados recebidos
   if (username && name && phone && email && password && plan) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
@@ -468,14 +458,14 @@ app.post('/create-checkout-session', async (req, res) => {
         console.log('PagSeguro response:', response);
 
         // Parse the XML response to extract the checkout code
-        xml2js.parseString(response.xml, (parseErr, result) => {
+        xml2js.parseString(response, (parseErr, result) => {
           if (parseErr) {
             console.log('Error parsing PagSeguro response:', parseErr);
             return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
           }
 
           const checkoutCode = result.checkout.code[0];
-          const paymentLink = `https://sandbox.pagbank.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
+          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
           res.json({ success: true, paymentLink });
         });
       });
