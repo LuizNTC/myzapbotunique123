@@ -20,7 +20,7 @@ const pool = new Pool({
   }
 });
 
-const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I";
+const apiKey = "AIzaSyBbNTFE9gMdzBHtW5yfPV6SLeLmHbyG8_I"; // Adicione sua chave de API aqui
 const requestQueue = [];
 let isProcessingQueue = false;
 const sessions = {};
@@ -29,7 +29,7 @@ console.log('Initializing server...');
 
 // Configuração do MercadoPago
 mercadopago.configure({
-  access_token: 'TEST-5604191190369797-050420-2dc2ca636bd8420875795c1add549414-268303205' // Substitua pelo seu Access Token do MercadoPago (teste ou produção conforme necessário)
+  access_token: 'APP_USR-1051520557198491-080611-741663b12c0895c6b8f9f252eee04bbf-268303205' // Substitua pelo seu Access Token do MercadoPago (teste ou produção conforme necessário)
 });
 
 // Use Helmet para definir cabeçalhos de segurança, incluindo CSP
@@ -46,7 +46,7 @@ app.use(
 );
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
+app.use(express.json()); // Middleware para JSON
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -351,17 +351,17 @@ wss.on('connection', (ws) => {
 
 // Webhook para MercadoPago
 app.post('/webhook', async (req, res) => {
-  console.log('Webhook received:', req.body); // Log para ver o corpo da notificação recebida
+  console.log('Webhook received:', req.body);
 
   const payment = req.body;
 
-  if (payment.action === 'payment.created' || payment.action === 'payment.updated') {
+  if (payment.type === 'payment') {
     const userId = payment.data.external_reference;
     const status = payment.data.status;
 
-    if (status === 'approved') { // Pagamento confirmado
+    if (status === 'approved') {
       await handlePaymentSuccess(userId);
-    } else if (status === 'cancelled' || status === 'rejected') { // Pagamento cancelado
+    } else if (status === 'cancelled' || status === 'rejected') {
       await handlePaymentFailure(userId);
     }
 
