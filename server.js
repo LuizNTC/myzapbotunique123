@@ -53,12 +53,15 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
-app.post('/register', async (req, res) => {
+app.post('/create-checkout-session', async (req, res) => {
+  console.log('/create-checkout-session endpoint hit');
   const { username, name, phone, email, password, plan } = req.body;
-  console.log('/register endpoint hit'); // Adicionando log
   console.log('Received data:', req.body); // Logando os dados recebidos
+
   if (username && name && phone && email && password && plan) {
+    const hashedPassword = await bcrypt.hash(password, 10);
     const client = await pool.connect();
+
     try {
       // Verificar se o email já existe
       const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -66,7 +69,6 @@ app.post('/register', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Email already registered' });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
       const result = await client.query(
         'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
         [username, name, phone, email, hashedPassword, 'pending']
