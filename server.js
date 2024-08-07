@@ -7,8 +7,7 @@ const axios = require('axios');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
-const PagSeguro = require('pagseguro');
-const xml2js = require('xml2js'); // Biblioteca para parsear o XML
+const mercadopago = require('mercadopago');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,14 +27,10 @@ const sessions = {};
 
 console.log('Initializing server...');
 
-// Configuração do PagSeguro
-const pagseguro = new PagSeguro({
-  email: 'luizgustavofmachado@gmail.com',
-  token: 'A094CC2E7F684869B7BBA1D9E55DDE1E',
-  mode: 'sandbox' // Modo de testes, troque para 'production' em produção
+// Configuração do MercadoPago
+mercadopago.configure({
+  access_token: 'APP_USR-1051520557198491-080611-741663b12c0895c6b8f9f252eee04bbf-268303205'
 });
-
-pagseguro.currency('BRL');
 
 // Use Helmet para definir cabeçalhos de segurança, incluindo CSP
 app.use(
@@ -80,36 +75,44 @@ app.post('/register', async (req, res) => {
       const userId = result.rows[0].id;
       const reference = `${userId}_${new Date().getTime()}`;
 
-      pagseguro.addItem({
-        id: plan,
-        description: `Plano ${plan}`,
-        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : plan === 'semiannually' ? '149.90' : '299.90',
-        quantity: 1
-      });
+      let price;
+      switch (plan) {
+        case 'monthly':
+          price = 29.90;
+          break;
+        case 'quarterly':
+          price = 79.90;
+          break;
+        case 'semiannually':
+          price = 149.90;
+          break;
+        case 'annually':
+          price = 299.90;
+          break;
+        default:
+          price = 29.90;
+      }
 
-      pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
-      pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
-
-      pagseguro.send(async (err, response) => {
-        if (err) {
-          console.log('Error creating checkout session:', err);
-          return res.status(500).json({ success: false, message: 'Error creating checkout session' });
-        }
-        
-        console.log('PagSeguro response:', response);
-
-        // Parse the XML response to extract the checkout code
-        xml2js.parseString(response, (parseErr, result) => {
-          if (parseErr) {
-            console.log('Error parsing PagSeguro response:', parseErr);
-            return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
+      const preference = {
+        items: [
+          {
+            title: `Plano ${plan}`,
+            quantity: 1,
+            currency_id: 'BRL',
+            unit_price: price
           }
+        ],
+        back_urls: {
+          success: `https://zaplite.com.br/success.html?reference=${reference}`,
+          failure: `https://zaplite.com.br/failure.html`
+        },
+        auto_return: 'approved',
+        external_reference: reference,
+        notification_url: 'https://zaplite.com.br/webhook'
+      };
 
-          const checkoutCode = result.checkout.code[0];
-          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
-          res.json({ success: true, paymentLink });
-        });
-      });
+      const response = await mercadopago.preferences.create(preference);
+      res.json({ success: true, paymentLink: response.body.init_point });
     } catch (err) {
       console.error('Error registering user:', err);
       res.status(500).json({ success: false, message: 'Error registering user' });
@@ -364,32 +367,33 @@ wss.on('connection', (ws) => {
   console.log('WebSocket client connected');
 });
 
-// Webhook para PagSeguro
-app.post('/webhook', express.raw({ type: 'application/xml' }), (req, res) => {
-  console.log('Webhook received:', req.body); // Log para ver o corpo da notificação recebida
+// Webhook para MercadoPago
+app.post('/webhook', express.json(), async (req, res) => {
+  console.log('Webhook received:', req.body);
 
-  const notificationCode = req.body.notificationCode;
+  const { type, data } = req.body;
+  
+  if (type === 'payment') {
+    const paymentId = data.id;
 
-  pagseguro.notification(notificationCode, (err, notification) => {
-    if (err) {
-      console.log('Error handling notification:', err);
+    try {
+      const payment = await mercadopago.payment.findById(paymentId);
+      const status = payment.body.status;
+      const externalReference = payment.body.external_reference;
+      const userId = externalReference.split('_')[0];
+
+      if (status === 'approved') {
+        handlePaymentSuccess(userId);
+      } else if (status === 'rejected') {
+        handlePaymentFailure(userId);
+      }
+    } catch (err) {
+      console.error('Error handling webhook:', err);
       return res.status(500).send(`Webhook Error: ${err.message}`);
     }
+  }
 
-    console.log('Notification:', notification); // Log da notificação completa recebida
-
-    const status = notification.status;
-    const reference = notification.reference;
-    const userId = reference.split('_')[0];
-
-    if (status === '3') { // Pagamento confirmado
-      handlePaymentSuccess(userId);
-    } else if (status === '7') { // Pagamento cancelado
-      handlePaymentFailure(userId);
-    }
-
-    res.sendStatus(200);
-  });
+  res.sendStatus(200);
 });
 
 const handlePaymentSuccess = async (userId) => {
@@ -415,67 +419,3 @@ const handlePaymentFailure = async (userId) => {
     client.release();
   }
 };
-
-// Criar sessão de pagamento no PagSeguro
-app.post('/create-checkout-session', async (req, res) => {
-  console.log('/create-checkout-session endpoint hit');
-  const { username, name, phone, email, password, plan } = req.body;
-  console.log('Received data:', req.body); // Logando os dados recebidos
-  if (username && name && phone && email && password && plan) {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const client = await pool.connect();
-    try {
-      // Verificar se o email já existe
-      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
-      if (emailCheck.rows.length > 0) {
-        return res.status(400).json({ success: false, message: 'Email already registered' });
-      }
-
-      const result = await client.query(
-        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-        [username, name, phone, email, hashedPassword, 'pending']
-      );
-
-      const userId = result.rows[0].id;
-      const reference = `${userId}_${new Date().getTime()}`;
-
-      pagseguro.addItem({
-        id: plan,
-        description: `Plano ${plan}`,
-        amount: plan === 'monthly' ? '29.90' : plan === 'quarterly' ? '79.90' : plan === 'semiannually' ? '149.90' : '299.90',
-        quantity: 1
-      });
-
-      pagseguro.setRedirectURL(`https://zaplite.com.br/success.html?reference=${reference}`);
-      pagseguro.setNotificationURL('https://zaplite.com.br/webhook');
-
-      pagseguro.send(async (err, response) => {
-        if (err) {
-          console.log('Error creating checkout session:', err);
-          return res.status(500).json({ success: false, message: 'Error creating checkout session' });
-        }
-        
-        console.log('PagSeguro response:', response);
-
-        // Parse the XML response to extract the checkout code
-        xml2js.parseString(response, (parseErr, result) => {
-          if (parseErr) {
-            console.log('Error parsing PagSeguro response:', parseErr);
-            return res.status(500).json({ success: false, message: 'Error parsing PagSeguro response' });
-          }
-
-          const checkoutCode = result.checkout.code[0];
-          const paymentLink = `https://sandbox.pagseguro.uol.com.br/v2/checkout/payment.html?code=${checkoutCode}`;
-          res.json({ success: true, paymentLink });
-        });
-      });
-    } catch (err) {
-      console.error('Error registering user:', err);
-      res.status(500).json({ success: false, message: 'Error registering user' });
-    } finally {
-      client.release();
-    }
-  } else {
-    res.status(400).json({ success: false, message: 'All fields are required' });
-  }
-});
