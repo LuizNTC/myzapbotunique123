@@ -8,6 +8,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const mercadopago = require('mercadopago');
+const cron = require('node-cron');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,6 +54,19 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
+cron.schedule('0 0 * * *', async () => { // Executa diariamente à meia-noite
+  console.log('Checking for expired subscriptions...');
+  const client = await pool.connect();
+  try {
+    const result = await client.query('UPDATE users SET subscription_status = $1 WHERE expiration_date < NOW()', ['expired']);
+    console.log(`${result.rowCount} subscriptions updated to expired.`);
+  } catch (err) {
+    console.error('Error updating expired subscriptions:', err);
+  } finally {
+    client.release();
+  }
+});
+
 app.post('/create-checkout-session', async (req, res) => {
   console.log('/create-checkout-session endpoint hit');
   const { username, name, phone, email, password, plan } = req.body;
@@ -78,22 +92,30 @@ app.post('/create-checkout-session', async (req, res) => {
       const reference = `${userId}_${new Date().getTime()}`;
 
       let price;
+      let expirationDate = new Date();
       switch (plan) {
         case 'monthly':
           price = 29.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
           break;
         case 'quarterly':
           price = 79.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 3);
           break;
         case 'semiannually':
           price = 149.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 6);
           break;
         case 'annually':
           price = 299.90;
+          expirationDate.setFullYear(expirationDate.getFullYear() + 1);
           break;
         default:
           price = 29.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
       }
+
+      await client.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [expirationDate, userId]);
 
       const preference = {
         items: [
@@ -125,6 +147,24 @@ app.post('/create-checkout-session', async (req, res) => {
     res.status(400).json({ success: false, message: 'All fields are required' });
   }
 });
+
+app.post('/get-expiration-date', async (req, res) => {
+  const { userId } = req.body;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT expiration_date FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      throw new Error('No user found with the provided userId');
+    }
+    res.status(200).json({ success: true, expirationDate: result.rows[0].expiration_date });
+  } catch (err) {
+    console.error('Error getting expiration date:', err);
+    res.status(500).json({ success: false, message: 'Error getting expiration date' });
+  } finally {
+    client.release();
+  }
+});
+
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
