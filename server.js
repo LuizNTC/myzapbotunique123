@@ -54,6 +54,37 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
+// Middleware de autenticação
+const authenticate = async (req, res, next) => {
+  const { userId } = req.body;
+  if (!userId) {
+    return res.status(401).json({ success: false, message: 'User not authenticated' });
+  }
+
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT subscription_status, expiration_date FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      return res.status(401).json({ success: false, message: 'User not found' });
+    }
+
+    const { subscription_status, expiration_date } = result.rows[0];
+    const currentDate = new Date();
+
+    if (subscription_status !== 'active' || new Date(expiration_date) < currentDate) {
+      return res.status(403).json({ success: false, message: 'Subscription expired or inactive' });
+    }
+
+    next();
+  } catch (err) {
+    console.error('Error during authentication:', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+};
+
+// Tarefa agendada para atualizar assinaturas expiradas
 cron.schedule('0 0 * * *', async () => { // Executa diariamente à meia-noite
   console.log('Checking for expired subscriptions...');
   const client = await pool.connect();
@@ -148,7 +179,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-app.post('/get-expiration-date', async (req, res) => {
+app.post('/get-expiration-date', authenticate, async (req, res) => {
   const { userId } = req.body;
   const client = await pool.connect();
   try {
@@ -185,7 +216,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/set-prompt', async (req, res) => {
+app.post('/set-prompt', authenticate, async (req, res) => {
   const { userId, prompt } = req.body;
   const client = await pool.connect();
   try {
@@ -199,7 +230,7 @@ app.post('/set-prompt', async (req, res) => {
   }
 });
 
-app.post('/get-prompt', async (req, res) => {
+app.post('/get-prompt', authenticate, async (req, res) => {
   const { userId } = req.body;
   const client = await pool.connect();
   try {
@@ -216,14 +247,14 @@ app.post('/get-prompt', async (req, res) => {
   }
 });
 
-app.post('/start-bot', (req, res) => {
+app.post('/start-bot', authenticate, (req, res) => {
   console.log('Received request to start bot');
   const { userId } = req.body;
   startBot(userId);
   res.json({ success: true });
 });
 
-app.post('/stop-bot', (req, res) => {
+app.post('/stop-bot', authenticate, (req, res) => {
   console.log('Received request to stop bot');
   const { userId } = req.body;
   stopBot(userId);
