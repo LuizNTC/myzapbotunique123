@@ -114,28 +114,20 @@ const sendEmail = (to, subject, text) => {
   });
 };
 
-app.post('/create-checkout-session', async (req, res) => {
-  console.log('/create-checkout-session endpoint hit');
-  const { username, name, phone, email, password, plan } = req.body;
+app.post('/create-renewal-checkout-session', async (req, res) => {
+  console.log('/create-renewal-checkout-session endpoint hit');
+  const { userId, plan } = req.body;
   console.log('Received data:', req.body); // Logando os dados recebidos
 
-  if (username && name && phone && email && password && plan) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+  if (userId && plan) {
     const client = await pool.connect();
-
     try {
-      // Verificar se o email já existe
-      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
-      if (emailCheck.rows.length > 0) {
-        return res.status(400).json({ success: false, message: 'Email already registered' });
+      const userResult = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
+      const user = userResult.rows[0];
+      if (!user) {
+        return res.status(400).json({ success: false, message: 'User not found' });
       }
 
-      const result = await client.query(
-        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-        [username, name, phone, email, hashedPassword, 'pending']
-      );
-
-      const userId = result.rows[0].id;
       const reference = `${userId}_${new Date().getTime()}`;
 
       let price;
@@ -164,8 +156,6 @@ app.post('/create-checkout-session', async (req, res) => {
 
       console.log('Expiration date set to:', expirationDate);
 
-      await client.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [expirationDate, userId]);
-
       const preference = {
         items: [
           {
@@ -191,15 +181,16 @@ app.post('/create-checkout-session', async (req, res) => {
 
       res.json({ success: true, paymentLink: response.body.init_point });
     } catch (err) {
-      console.error('Error registering user:', err);
-      res.status(500).json({ success: false, message: 'Error registering user' });
+      console.error('Error creating renewal session:', err);
+      res.status(500).json({ success: false, message: 'Error creating renewal session' });
     } finally {
       client.release();
     }
   } else {
-    res.status(400).json({ success: false, message: 'All fields are required' });
+    res.status(400).json({ success: false, message: 'User ID and plan are required' });
   }
 });
+
 
 app.post('/get-expiration-date', authenticate, async (req, res) => {
   const { userId } = req.body;
@@ -494,6 +485,26 @@ app.post('/webhook', express.json(), async (req, res) => {
   res.sendStatus(200);
 });
 
+app.post('/verify-subscription', async (req, res) => {
+  const { userId } = req.body;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT subscription_status, expiration_date FROM users WHERE id = $1', [userId]);
+    const user = result.rows[0];
+    if (user && user.subscription_status === 'active') {
+      res.json({ success: true, active: true });
+    } else {
+      res.json({ success: true, active: false });
+    }
+  } catch (err) {
+    console.error('Error verifying subscription:', err);
+    res.status(500).json({ success: false, message: 'Error verifying subscription' });
+  } finally {
+    client.release();
+  }
+});
+
+
 const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
   try {
@@ -523,3 +534,4 @@ const handlePaymentFailure = async (userId) => {
     client.release();
   }
 };
+

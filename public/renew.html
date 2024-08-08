@@ -62,7 +62,12 @@
 
     function renewSubscription(plan) {
       const userId = localStorage.getItem('userId');
-      fetch('/create-checkout-session', {
+      if (!userId) {
+        alert('Usuário não logado. Por favor, faça login novamente.');
+        window.location.href = '/index.html';
+        return;
+      }
+      fetch('/create-renewal-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
