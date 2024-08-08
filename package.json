@@ -22,6 +22,7 @@
     "helmet": "^7.1.0",
     "mercadopago": "^1.5.10",
     "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.14",
     "pagseguro": "^0.1.0",
     "path": "^0.12.7",
     "pg": "^8.12.0",

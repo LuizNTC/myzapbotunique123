@@ -38,6 +38,9 @@
         localStorage.setItem('userId', result.userId); // Salvando userId no localStorage
         loginResult.textContent = 'Login successful!';
         window.location.href = 'dashboard.html'; // Redirecionar para o dashboard
+      } else if (result.message === 'Subscription expired') {
+        localStorage.setItem('expiration_date', new Date(result.expiration_date).toLocaleDateString());
+        window.location.href = 'renew.html'; // Redirecionar para a página de renovação
       } else {
         loginResult.textContent = 'Invalid credentials!';
       }
