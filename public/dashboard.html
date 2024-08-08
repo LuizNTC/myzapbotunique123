@@ -242,25 +242,10 @@
       }
       linkColor.forEach(l => l.addEventListener('click', colorLink));
 
-      // Carregar o prompt do usuário ao carregar a página
+      // Verificar a assinatura do usuário
       const userId = localStorage.getItem('userId'); // Assumindo que o userId foi salvo no login
       if (userId) {
-        fetch('/get-prompt', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ userId })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.prompt) {
-            document.getElementById('prompt').value = data.prompt;
-          }
-        });
-
-        // Verificar o status do bot ao carregar a página
-        fetch('/bot-status', {
+        fetch('/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -270,28 +255,60 @@
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            if (data.status === 'connected') {
-              document.getElementById('status').textContent = 'WhatsApp connected';
-            }
-          }
-        });
+            // Carregar o prompt do usuário ao carregar a página
+            fetch('/get-prompt', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success && data.prompt) {
+                document.getElementById('prompt').value = data.prompt;
+              }
+            });
 
-        // Verificar a data de expiração ao carregar a página
-        fetch('/get-expiration-date', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ userId })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.expirationDate) {
-            document.getElementById('expiration-date').textContent = `Expira em: ${new Date(data.expirationDate).toLocaleDateString()}`;
+            // Verificar o status do bot ao carregar a página
+            fetch('/bot-status', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                if (data.status === 'connected') {
+                  document.getElementById('status').textContent = 'WhatsApp connected';
+                }
+              }
+            });
+
+            // Verificar a data de expiração ao carregar a página
+            fetch('/get-expiration-date', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success && data.expirationDate) {
+                document.getElementById('expiration-date').textContent = `Expira em: ${new Date(data.expirationDate).toLocaleDateString()}`;
+              }
+            });
+          } else {
+            alert('Subscription expired or invalid');
+            window.location.href = '/index.html'; // Redirecionar para a página de login
           }
         });
       } else {
-        window.location.href = '/'; // Redireciona para a página de login se não estiver autenticado
+        alert('User not logged in');
+        window.location.href = '/index.html'; // Redirecionar para a página de login
       }
     });
 

@@ -54,37 +54,6 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
-// Middleware de autenticação
-const authenticate = async (req, res, next) => {
-  const { userId } = req.body;
-  if (!userId) {
-    return res.status(401).json({ success: false, message: 'User not authenticated' });
-  }
-
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT subscription_status, expiration_date FROM users WHERE id = $1', [userId]);
-    if (result.rows.length === 0) {
-      return res.status(401).json({ success: false, message: 'User not found' });
-    }
-
-    const { subscription_status, expiration_date } = result.rows[0];
-    const currentDate = new Date();
-
-    if (subscription_status !== 'active' || new Date(expiration_date) < currentDate) {
-      return res.status(403).json({ success: false, message: 'Subscription expired or inactive' });
-    }
-
-    next();
-  } catch (err) {
-    console.error('Error during authentication:', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
-  } finally {
-    client.release();
-  }
-};
-
-// Tarefa agendada para atualizar assinaturas expiradas
 cron.schedule('0 0 * * *', async () => { // Executa diariamente à meia-noite
   console.log('Checking for expired subscriptions...');
   const client = await pool.connect();
@@ -146,6 +115,8 @@ app.post('/create-checkout-session', async (req, res) => {
           expirationDate.setMonth(expirationDate.getMonth() + 1);
       }
 
+      console.log('Expiration date set to:', expirationDate);
+
       await client.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [expirationDate, userId]);
 
       const preference = {
@@ -166,7 +137,11 @@ app.post('/create-checkout-session', async (req, res) => {
         notification_url: 'https://zaplite.com.br/webhook'
       };
 
+      console.log('Creating MercadoPago preference:', preference);
+
       const response = await mercadopago.preferences.create(preference);
+      console.log('MercadoPago response:', response);
+
       res.json({ success: true, paymentLink: response.body.init_point });
     } catch (err) {
       console.error('Error registering user:', err);
@@ -179,7 +154,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-app.post('/get-expiration-date', authenticate, async (req, res) => {
+app.post('/get-expiration-date', async (req, res) => {
   const { userId } = req.body;
   const client = await pool.connect();
   try {
@@ -195,7 +170,6 @@ app.post('/get-expiration-date', authenticate, async (req, res) => {
     client.release();
   }
 });
-
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -216,7 +190,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.post('/set-prompt', authenticate, async (req, res) => {
+app.post('/set-prompt', async (req, res) => {
   const { userId, prompt } = req.body;
   const client = await pool.connect();
   try {
@@ -230,7 +204,7 @@ app.post('/set-prompt', authenticate, async (req, res) => {
   }
 });
 
-app.post('/get-prompt', authenticate, async (req, res) => {
+app.post('/get-prompt', async (req, res) => {
   const { userId } = req.body;
   const client = await pool.connect();
   try {
@@ -247,14 +221,14 @@ app.post('/get-prompt', authenticate, async (req, res) => {
   }
 });
 
-app.post('/start-bot', authenticate, (req, res) => {
+app.post('/start-bot', (req, res) => {
   console.log('Received request to start bot');
   const { userId } = req.body;
   startBot(userId);
   res.json({ success: true });
 });
 
-app.post('/stop-bot', authenticate, (req, res) => {
+app.post('/stop-bot', (req, res) => {
   console.log('Received request to stop bot');
   const { userId } = req.body;
   stopBot(userId);
@@ -416,6 +390,87 @@ const stopBot = (userId) => {
     console.log(`No active WhatsApp session to stop for user ${userId}`);
   }
 };
+
+const authenticate = async (req, res, next) => {
+  const { userId } = req.body;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT subscription_status FROM users WHERE id = $1', [userId]);
+    const user = result.rows[0];
+    if (user && user.subscription_status === 'active') {
+      next();
+    } else {
+      res.status(403).json({ success: false, message: 'Subscription expired or invalid' });
+    }
+  } catch (err) {
+    console.error('Authentication error:', err);
+    res.status(500).json({ success: false, message: 'Authentication error' });
+  } finally {
+    client.release();
+  }
+};
+
+app.post('/get-expiration-date', authenticate, async (req, res) => {
+  const { userId } = req.body;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT expiration_date FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      throw new Error('No user found with the provided userId');
+    }
+    res.status(200).json({ success: true, expirationDate: result.rows[0].expiration_date });
+  } catch (err) {
+    console.error('Error getting expiration date:', err);
+    res.status(500).json({ success: false, message: 'Error getting expiration date' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/set-prompt', authenticate, async (req, res) => {
+  const { userId, prompt } = req.body;
+  const client = await pool.connect();
+  try {
+    await client.query('UPDATE users SET prompt = $1 WHERE id = $2', [prompt, userId]);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Error setting prompt:', err);
+    res.status(500).json({ success: false, message: 'Error setting prompt' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/get-prompt', authenticate, async (req, res) => {
+  const { userId } = req.body;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT prompt FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      throw new Error('No user found with the provided userId');
+    }
+    res.status(200).json({ success: true, prompt: result.rows[0].prompt });
+  } catch (err) {
+    console.error('Error getting prompt:', err);
+    res.status(500).json({ success: false, message: 'Error getting prompt' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/start-bot', authenticate, (req, res) => {
+  console.log('Received request to start bot');
+  const { userId } = req.body;
+  startBot(userId);
+  res.json({ success: true });
+});
+
+app.post('/stop-bot', authenticate, (req, res) => {
+  console.log('Received request to stop bot');
+  const { userId } = req.body;
+  stopBot(userId);
+  res.json({ success: true });
+});
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
