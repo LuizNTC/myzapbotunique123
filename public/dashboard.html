@@ -241,11 +241,11 @@
         }
       }
       linkColor.forEach(l => l.addEventListener('click', colorLink));
-
+  
       // Verificar a assinatura do usuário
       const userId = localStorage.getItem('userId'); // Assumindo que o userId foi salvo no login
       if (userId) {
-        fetch('/login', {
+        fetch('/verify-subscription', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -254,7 +254,7 @@
         })
         .then(response => response.json())
         .then(data => {
-          if (data.success) {
+          if (data.success && data.active) {
             // Carregar o prompt do usuário ao carregar a página
             fetch('/get-prompt', {
               method: 'POST',
@@ -269,7 +269,7 @@
                 document.getElementById('prompt').value = data.prompt;
               }
             });
-
+  
             // Verificar o status do bot ao carregar a página
             fetch('/bot-status', {
               method: 'POST',
@@ -286,7 +286,7 @@
                 }
               }
             });
-
+  
             // Verificar a data de expiração ao carregar a página
             fetch('/get-expiration-date', {
               method: 'POST',
@@ -311,7 +311,7 @@
         window.location.href = '/index.html'; // Redirecionar para a página de login
       }
     });
-
+  
     // Função de salvamento do prompt
     const savePromptButton = document.getElementById('save-prompt');
     savePromptButton.addEventListener('click', () => {
@@ -333,16 +333,16 @@
         }
       });
     });
-
+  
     // Iniciar e parar bot
     const startBotButton = document.getElementById('start-bot');
     const stopBotButton = document.getElementById('stop-bot');
     const statusElement = document.getElementById('status');
     const qrCodeImage = document.getElementById('qr-code');
-
+  
     startBotButton.addEventListener('click', () => {
       statusElement.textContent = 'Bot started successfully. Waiting for QR Code...';
-
+  
       fetch('/start-bot', {
         method: 'POST',
         headers: {
@@ -359,7 +359,7 @@
           }
         });
     });
-
+  
     stopBotButton.addEventListener('click', () => {
       fetch('/stop-bot', {
         method: 'POST',
@@ -379,12 +379,12 @@
           }
         });
     });
-
+  
     const ws = new WebSocket(`wss://${window.location.host}`);
-
+  
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-
+  
       if (message.status === 'qr_code') {
         qrCodeImage.src = message.data;
         qrCodeImage.style.display = 'block';
@@ -395,5 +395,6 @@
       }
     };
   </script>
+  
 </body>
 </html>
