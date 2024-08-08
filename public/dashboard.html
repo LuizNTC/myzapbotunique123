@@ -216,51 +216,24 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
  
   <script>
-    // Adicionando função de animação do menu lateral
     document.addEventListener("DOMContentLoaded", function(event) {
-      const showNavbar = (toggleId, navId, bodyId, headerId) => {
-        const toggle = document.getElementById(toggleId),
-              nav = document.getElementById(navId),
-              bodypd = document.getElementById(bodyId),
-              headerpd = document.getElementById(headerId);
-        if (toggle && nav && bodypd && headerpd) {
-          toggle.addEventListener('click', () => {
-            nav.classList.toggle('show');
-            toggle.classList.toggle('bx-x');
-            bodypd.classList.toggle('body-pd');
-            headerpd.classList.toggle('body-pd');
-          });
-        }
-      };
-      showNavbar('header-toggle', 'nav-bar', 'body-pd', 'header');
-      const linkColor = document.querySelectorAll('.nav_link');
-      function colorLink() {
-        if (linkColor) {
-          linkColor.forEach(l => l.classList.remove('active'));
-          this.classList.add('active');
-        }
-      }
-      linkColor.forEach(l => l.addEventListener('click', colorLink));
-  
-      // Verificar a assinatura do usuário
-      const userId = localStorage.getItem('userId'); // Assumindo que o userId foi salvo no login
+      const userId = localStorage.getItem('userId');
       if (userId) {
         fetch('/verify-subscription', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId })
         })
         .then(response => response.json())
         .then(data => {
           if (data.success && data.active) {
-            // Carregar o prompt do usuário ao carregar a página
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+
+            // Continue carregando o restante do conteúdo, como prompt, status do bot, etc.
             fetch('/get-prompt', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId })
             })
             .then(response => response.json())
@@ -269,13 +242,10 @@
                 document.getElementById('prompt').value = data.prompt;
               }
             });
-  
-            // Verificar o status do bot ao carregar a página
+
             fetch('/bot-status', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId })
             })
             .then(response => response.json())
@@ -286,13 +256,10 @@
                 }
               }
             });
-  
-            // Verificar a data de expiração ao carregar a página
+
             fetch('/get-expiration-date', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ userId })
             })
             .then(response => response.json())
@@ -302,24 +269,22 @@
               }
             });
           } else {
-            window.location.href = '/index.html'; // Redirecionar para a página de login
+            window.location.href = '/index.html';
           }
         });
       } else {
-        window.location.href = '/index.html'; // Redirecionar para a página de login
+        window.location.href = '/index.html';
       }
     });
-  
+
     // Função de salvamento do prompt
     const savePromptButton = document.getElementById('save-prompt');
     savePromptButton.addEventListener('click', () => {
       const prompt = document.getElementById('prompt').value;
-      const userId = localStorage.getItem('userId'); // Assumindo que o userId foi salvo no login
+      const userId = localStorage.getItem('userId');
       fetch('/set-prompt', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, prompt })
       })
       .then(response => response.json())
@@ -331,22 +296,20 @@
         }
       });
     });
-  
+
     // Iniciar e parar bot
     const startBotButton = document.getElementById('start-bot');
     const stopBotButton = document.getElementById('stop-bot');
     const statusElement = document.getElementById('status');
     const qrCodeImage = document.getElementById('qr-code');
-  
+
     startBotButton.addEventListener('click', () => {
       statusElement.textContent = 'Bot started successfully. Waiting for QR Code...';
-  
+      const userId = localStorage.getItem('userId');
       fetch('/start-bot', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId: localStorage.getItem('userId') })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
       }).then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -357,14 +320,13 @@
           }
         });
     });
-  
+
     stopBotButton.addEventListener('click', () => {
+      const userId = localStorage.getItem('userId');
       fetch('/stop-bot', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId: localStorage.getItem('userId') })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
       }).then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -377,12 +339,12 @@
           }
         });
     });
-  
+
     const ws = new WebSocket(`wss://${window.location.host}`);
-  
+
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-  
+
       if (message.status === 'qr_code') {
         qrCodeImage.src = message.data;
         qrCodeImage.style.display = 'block';
