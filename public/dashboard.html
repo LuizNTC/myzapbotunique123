@@ -217,65 +217,67 @@
  
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
-      const userId = localStorage.getItem('userId');
-      if (userId) {
-        fetch('/verify-subscription', {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
+      return; // Parar a execução do script
+    }
+
+    // Verificar a assinatura do usuário
+    fetch('/verify-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.active) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        // Continue carregando o restante do conteúdo, como prompt, status do bot, etc.
+        fetch('/get-prompt', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId })
         })
         .then(response => response.json())
         .then(data => {
-          if (data.success && data.active) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
+          if (data.success && data.prompt) {
+            document.getElementById('prompt').value = data.prompt;
+          }
+        });
 
-            // Continue carregando o restante do conteúdo, como prompt, status do bot, etc.
-            fetch('/get-prompt', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.success && data.prompt) {
-                document.getElementById('prompt').value = data.prompt;
-              }
-            });
+        fetch('/bot-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            if (data.status === 'connected') {
+              document.getElementById('status').textContent = 'WhatsApp connected';
+            }
+          }
+        });
 
-            fetch('/bot-status', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.success) {
-                if (data.status === 'connected') {
-                  document.getElementById('status').textContent = 'WhatsApp connected';
-                }
-              }
-            });
-
-            fetch('/get-expiration-date', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.success && data.expirationDate) {
-                document.getElementById('expiration-date').textContent = `Expira em: ${new Date(data.expirationDate).toLocaleDateString()}`;
-              }
-            });
-          } else {
-            window.location.href = '/index.html';
+        fetch('/get-expiration-date', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.expirationDate) {
+            document.getElementById('expiration-date').textContent = `Expira em: ${new Date(data.expirationDate).toLocaleDateString()}`;
           }
         });
       } else {
-        window.location.href = '/index.html';
+        window.location.href = '/index.html'; // Redirecionar para a página de login se a assinatura não estiver ativa
       }
     });
+  });
 
     // Função de salvamento do prompt
     const savePromptButton = document.getElementById('save-prompt');

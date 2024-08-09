@@ -38,8 +38,8 @@ mercadopago.configure({
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'contato.zaplite@gmail.com',
-    pass: '#Luizgustavo147258'
+    user: 'zaplitebrasil@gmail.com',
+    pass: 'nuaocpeyfdcgtzds'
   }
 });
 
