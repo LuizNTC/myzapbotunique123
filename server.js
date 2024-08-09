@@ -100,7 +100,7 @@ const authenticate = async (req, res, next) => {
 // Função de envio de email
 const sendEmail = (to, subject, text) => {
   const mailOptions = {
-    from: 'seu-email@gmail.com',
+    from: 'contato.zaplite@gmail.com',
     to,
     subject,
     text
@@ -113,6 +113,88 @@ const sendEmail = (to, subject, text) => {
     }
   });
 };
+
+app.post('/create-checkout-session', async (req, res) => {
+  const { username, name, phone, email, password, plan } = req.body;
+  console.log('Received data:', req.body);
+
+  if (username && name && phone && email && password && plan) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const client = await pool.connect();
+
+    try {
+      // Verificar se o email já existe
+      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'Email already registered' });
+      }
+
+      const result = await client.query(
+        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+        [username, name, phone, email, hashedPassword, 'pending']
+      );
+
+      const userId = result.rows[0].id;
+      const reference = `${userId}_${new Date().getTime()}`;
+
+      let price;
+      let expirationDate = new Date();
+      switch (plan) {
+        case 'monthly':
+          price = 29.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+          break;
+        case 'quarterly':
+          price = 79.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 3);
+          break;
+        case 'semiannually':
+          price = 149.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 6);
+          break;
+        case 'annually':
+          price = 299.90;
+          expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+          break;
+        default:
+          price = 29.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+      }
+
+      await client.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [expirationDate, userId]);
+
+      const preference = {
+        items: [
+          {
+            title: `Plano ${plan}`,
+            quantity: 1,
+            currency_id: 'BRL',
+            unit_price: price
+          }
+        ],
+        back_urls: {
+          success: `https://zaplite.com.br/success.html?reference=${reference}`,
+          failure: `https://zaplite.com.br/failure.html`
+        },
+        auto_return: 'approved',
+        external_reference: reference,
+        notification_url: 'https://zaplite.com.br/webhook'
+      };
+
+      const response = await mercadopago.preferences.create(preference);
+
+      res.json({ success: true, paymentLink: response.body.init_point });
+    } catch (err) {
+      console.error('Error registering user:', err);
+      res.status(500).json({ success: false, message: 'Error registering user' });
+    } finally {
+      client.release();
+    }
+  } else {
+    res.status(400).json({ success: false, message: 'All fields are required' });
+  }
+});
+
 
 app.post('/create-renewal-checkout-session', async (req, res) => {
   console.log('/create-renewal-checkout-session endpoint hit');
@@ -507,16 +589,24 @@ app.post('/verify-subscription', async (req, res) => {
 const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
   try {
+    // Atualizar o status da assinatura para "active"
     await client.query('UPDATE users SET subscription_status = $1 WHERE id = $2', ['active', userId]);
     console.log(`User ${userId} subscription activated.`);
 
-    // Enviar email de confirmação
+    // Obter o email do usuário
     const result = await client.query('SELECT email FROM users WHERE id = $1', [userId]);
-    const userEmail = result.rows[0].email;
-    sendEmail(userEmail, 'Subscription Activated', 'Your subscription has been activated. You can now access the platform.');
+    if (result.rows.length > 0) {
+      const userEmail = result.rows[0].email;
+
+      // Enviar email de confirmação
+      sendEmail(userEmail, 'Subscription Activated', 'Your subscription has been activated. You can now access the platform.');
+      console.log(`Confirmation email sent to ${userEmail}`);
+    } else {
+      console.error('User not found for sending email.');
+    }
 
   } catch (err) {
-    console.error('Error updating subscription status:', err);
+    console.error('Error updating subscription status or sending email:', err);
   } finally {
     client.release();
   }
