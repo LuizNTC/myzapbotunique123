@@ -99,20 +99,22 @@ const authenticate = async (req, res, next) => {
 
 // Função de envio de email
 const sendEmail = (to, subject, text) => {
+  console.log(`Enviando email para ${to}...`);
   const mailOptions = {
-    from: 'contato.zaplite@gmail.com',
+    from: 'contato.zaplite@gmail.com', // Seu email
     to,
     subject,
     text
   };
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.error('Error sending email:', error);
+      console.error('Erro ao enviar email:', error);
     } else {
-      console.log('Email sent:', info.response);
+      console.log('Email enviado:', info.response);
     }
   });
 };
+
 
 app.post('/create-checkout-session', async (req, res) => {
   const { username, name, phone, email, password, plan } = req.body;

@@ -61,24 +61,26 @@
     });
 
     function renewSubscription(plan) {
-  const userId = localStorage.getItem('userId');
-  fetch('/create-renewal-checkout-session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, plan })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      window.location.href = data.paymentLink;
-    } else {
-      alert('Erro ao criar sessão de pagamento.');
+      console.log('Renovação iniciada para o plano:', plan);
+      const userId = localStorage.getItem('userId');
+      fetch('/create-renewal-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, plan })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = data.paymentLink;
+        } else {
+          alert('Erro ao criar sessão de pagamento.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
-}
+
 
   </script>
 </body>
