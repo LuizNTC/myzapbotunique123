@@ -3,20 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Renovar Assinatura</title>
+  <title>Escolha seu Plano</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
   <div class="container mt-5">
-    <h1>Sua assinatura expirou</h1>
-    <p>Sua assinatura expirou em <span id="expiration-date"></span>. Por favor, renove escolhendo um dos planos abaixo:</p>
+    <h1>Escolha seu Plano</h1>
+    <p>Selecione um dos planos abaixo para continuar:</p>
     <div class="row">
       <div class="col-md-3">
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Plano Mensal</h5>
             <p class="card-text">R$29,90 por mês</p>
-            <button class="btn btn-primary" onclick="renewSubscription('monthly')">Renovar</button>
+            <button class="btn btn-primary" onclick="choosePlan('monthly')">Escolher</button>
           </div>
         </div>
       </div>
@@ -25,7 +25,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Trimestral</h5>
             <p class="card-text">R$79,90 por 3 meses</p>
-            <button class="btn btn-primary" onclick="renewSubscription('quarterly')">Renovar</button>
+            <button class="btn btn-primary" onclick="choosePlan('quarterly')">Escolher</button>
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Semestral</h5>
             <p class="card-text">R$149,90 por 6 meses</p>
-            <button class="btn btn-primary" onclick="renewSubscription('semiannually')">Renovar</button>
+            <button class="btn btn-primary" onclick="choosePlan('semiannually')">Escolher</button>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Anual</h5>
             <p class="card-text">R$299,90 por ano</p>
-            <button class="btn btn-primary" onclick="renewSubscription('annually')">Renovar</button>
+            <button class="btn btn-primary" onclick="choosePlan('annually')">Escolher</button>
           </div>
         </div>
       </div>
@@ -51,19 +51,9 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function(event) {
-        const expirationDate = localStorage.getItem('expiration_date');
-        if (expirationDate) {
-            document.getElementById('expiration-date').textContent = expirationDate;
-        } else {
-            window.location.href = '/index.html'; // Redirecionar para a página de login se não houver data de expiração
-        }
-    });
-
-    function renewSubscription(plan) {
-        console.log('Iniciando renovação para o plano:', plan);
+    function choosePlan(plan) {
         const userId = localStorage.getItem('userId');
-        fetch('/create-renewal-checkout-session', {
+        fetch('/create-checkout-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, plan })
@@ -78,11 +68,10 @@
             }
         })
         .catch(error => {
-            console.error('Erro na renovação:', error);
+            console.error('Erro ao escolher plano:', error);
             alert('Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.');
         });
     }
-</script>
-
+  </script>
 </body>
 </html>

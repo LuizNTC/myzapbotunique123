@@ -64,18 +64,26 @@ app.get('/', (req, res) => {
   console.log('Route / accessed');
 });
 
-cron.schedule('0 0 * * *', async () => { // Executa diariamente à meia-noite
-  console.log('Checking for expired subscriptions...');
+cron.schedule('0 0 * * *', async () => {
   const client = await pool.connect();
   try {
-    const result = await client.query('UPDATE users SET subscription_status = $1 WHERE expiration_date < NOW()', ['expired']);
-    console.log(`${result.rowCount} subscriptions updated to expired.`);
+    const expiredUsers = await client.query('SELECT id FROM users WHERE subscription_status = $1', ['expired']);
+    expiredUsers.rows.forEach(user => {
+      const sessionName = `session_${user.id}`;
+      if (sessions[sessionName]) {
+        sessions[sessionName].close().then(() => {
+          console.log(`Session closed for expired user ${user.id}`);
+          delete sessions[sessionName];
+        }).catch(err => console.error(`Error closing session for expired user ${user.id}:`, err));
+      }
+    });
   } catch (err) {
-    console.error('Error updating expired subscriptions:', err);
+    console.error('Error checking for expired sessions:', err);
   } finally {
     client.release();
   }
 });
+
 
 // Função de autenticação
 const authenticate = async (req, res, next) => {
@@ -98,13 +106,25 @@ const authenticate = async (req, res, next) => {
 };
 
 // Função de envio de email
-const sendEmail = (to, subject, text) => {
-  console.log(`Enviando email para ${to}...`);
+const sendEmail = (to, subject, userName) => {
   const mailOptions = {
-    from: 'contato.zaplite@gmail.com', // Seu email
+    from: 'contato.zaplite@gmail.com',
     to,
     subject,
-    text
+    html: `
+      <div style="background-color:#f7f7f7; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; background-color: #ffffff; padding: 20px; border-radius: 10px;">
+          <h2 style="color: #333333; text-align: center;">Sua assinatura foi ativada!</h2>
+          <p style="color: #666666; text-align: center;">Olá ${userName},</p>
+          <p style="color: #666666; text-align: center;">Estamos felizes em informar que sua assinatura foi ativada com sucesso. Agora você pode acessar a plataforma e aproveitar todos os nossos serviços.</p>
+          <p style="color: #666666; text-align: center;">Obrigado por escolher ZapLite!</p>
+          <div style="text-align: center;">
+            <a href="https://zaplite.com.br" style="display: inline-block; padding: 10px 20px; color: #ffffff; background-color: #4CAF50; border-radius: 5px; text-decoration: none;">Acessar a Plataforma</a>
+          </div>
+          <p style="color: #999999; text-align: center; font-size: 12px; margin-top: 20px;">ZapLite | Todos os direitos reservados</p>
+        </div>
+      </div>
+    `
   };
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -114,6 +134,7 @@ const sendEmail = (to, subject, text) => {
     }
   });
 };
+
 
 
 app.post('/create-checkout-session', async (req, res) => {
