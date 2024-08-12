@@ -138,28 +138,20 @@ const sendEmail = (to, subject, userName) => {
 
 
 app.post('/create-checkout-session', async (req, res) => {
-  const { username, name, phone, email, password, plan } = req.body;
+  const { username, name, phone, email, password, plan, userId } = req.body;
   console.log('Received data:', req.body);
 
-  if (username && name && phone && email && password && plan) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+  if (userId && plan) {
+    // Se userId e plan forem fornecidos, trata-se de uma renovação ou atualização de plano
     const client = await pool.connect();
-
     try {
-      // Verificar se o email já existe
-      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
-      if (emailCheck.rows.length > 0) {
-        return res.status(400).json({ success: false, message: 'Email already registered' });
+      const result = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
+      const user = result.rows[0];
+      if (!user) {
+        return res.status(400).json({ success: false, message: 'User not found' });
       }
 
-      const result = await client.query(
-        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-        [username, name, phone, email, hashedPassword, 'pending']
-      );
-
-      const userId = result.rows[0].id;
       const reference = `${userId}_${new Date().getTime()}`;
-
       let price;
       let expirationDate = new Date();
       switch (plan) {
@@ -205,7 +197,76 @@ app.post('/create-checkout-session', async (req, res) => {
       };
 
       const response = await mercadopago.preferences.create(preference);
+      res.json({ success: true, paymentLink: response.body.init_point });
+    } catch (err) {
+      console.error('Error creating checkout session:', err);
+      res.status(500).json({ success: false, message: 'Error creating checkout session' });
+    } finally {
+      client.release();
+    }
+  } else if (username && name && phone && email && password && plan) {
+    // Nova inscrição
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const client = await pool.connect();
 
+    try {
+      const emailCheck = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'Email already registered' });
+      }
+
+      const result = await client.query(
+        'INSERT INTO users (username, name, phone, email, password, subscription_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+        [username, name, phone, email, hashedPassword, 'pending']
+      );
+
+      const newUserId = result.rows[0].id;
+      const reference = `${newUserId}_${new Date().getTime()}`;
+      let price;
+      let expirationDate = new Date();
+      switch (plan) {
+        case 'monthly':
+          price = 29.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+          break;
+        case 'quarterly':
+          price = 79.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 3);
+          break;
+        case 'semiannually':
+          price = 149.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 6);
+          break;
+        case 'annually':
+          price = 299.90;
+          expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+          break;
+        default:
+          price = 29.90;
+          expirationDate.setMonth(expirationDate.getMonth() + 1);
+      }
+
+      await client.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [expirationDate, newUserId]);
+
+      const preference = {
+        items: [
+          {
+            title: `Plano ${plan}`,
+            quantity: 1,
+            currency_id: 'BRL',
+            unit_price: price
+          }
+        ],
+        back_urls: {
+          success: `https://zaplite.com.br/success.html?reference=${reference}`,
+          failure: `https://zaplite.com.br/failure.html`
+        },
+        auto_return: 'approved',
+        external_reference: reference,
+        notification_url: 'https://zaplite.com.br/webhook'
+      };
+
+      const response = await mercadopago.preferences.create(preference);
       res.json({ success: true, paymentLink: response.body.init_point });
     } catch (err) {
       console.error('Error registering user:', err);

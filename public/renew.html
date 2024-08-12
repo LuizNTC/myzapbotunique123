@@ -52,59 +52,56 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
-      const expirationDate = localStorage.getItem('expiration_date');
-      if (expirationDate) {
-        document.getElementById('expiration-date').textContent = expirationDate;
-      } else {
-        window.location.href = '/index.html'; // Redirecionar para a página de login se não houver data de expiração
-      }
+  const expirationDate = localStorage.getItem('expiration_date');
+  if (expirationDate) {
+    document.getElementById('expiration-date').textContent = expirationDate;
+  } else {
+    window.location.href = '/index.html';
+  }
 
-      // Adicionando os event listeners para os botões
-      document.getElementById('renew-monthly').addEventListener('click', function() {
-        renewSubscription('monthly');
-      });
+  document.getElementById('renew-monthly').addEventListener('click', function() {
+    renewSubscription('monthly');
+  });
+  document.getElementById('renew-quarterly').addEventListener('click', function() {
+    renewSubscription('quarterly');
+  });
+  document.getElementById('renew-semiannually').addEventListener('click', function() {
+    renewSubscription('semiannually');
+  });
+  document.getElementById('renew-annually').addEventListener('click', function() {
+    renewSubscription('annually');
+  });
+});
 
-      document.getElementById('renew-quarterly').addEventListener('click', function() {
-        renewSubscription('quarterly');
-      });
+function renewSubscription(plan) {
+  const userId = localStorage.getItem('userId');
 
-      document.getElementById('renew-semiannually').addEventListener('click', function() {
-        renewSubscription('semiannually');
-      });
+  if (!userId) {
+    console.error('User ID not found.');
+    alert('Erro: Usuário não identificado. Faça login novamente.');
+    return;
+  }
 
-      document.getElementById('renew-annually').addEventListener('click', function() {
-        renewSubscription('annually');
-      });
-    });
-
-    function renewSubscription(plan) {
-      const userId = localStorage.getItem('userId');
-
-      if (!userId) {
-        console.error('User ID not found.');
-        alert('Erro: Usuário não identificado. Faça login novamente.');
-        return;
-      }
-
-      fetch('/create-renewal-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, plan })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          window.location.href = data.paymentLink;
-        } else {
-          console.error('Erro ao criar sessão de pagamento:', data.message);
-          alert('Erro ao criar sessão de pagamento.');
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao processar a renovação:', error);
-        alert('Erro ao processar a renovação.');
-      });
+  fetch('/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, plan })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      window.location.href = data.paymentLink;
+    } else {
+      console.error('Erro ao criar sessão de pagamento:', data.message);
+      alert('Erro ao criar sessão de pagamento.');
     }
+  })
+  .catch(error => {
+    console.error('Erro ao processar a renovação:', error);
+    alert('Erro ao processar a renovação.');
+  });
+}
+
   </script>
 </body>
 </html>
