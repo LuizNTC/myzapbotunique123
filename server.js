@@ -323,6 +323,9 @@ app.post('/login', async (req, res) => {
     if (user && await bcrypt.compare(password, user.password)) {
       if (user.subscription_status === 'active') {
         res.status(200).json({ success: true, userId: user.id });
+      } else if (user.subscription_status === 'pending') {
+        // Redireciona o usuário para a página de planos
+        res.status(200).json({ success: true, pending: true });
       } else {
         res.status(403).json({ success: false, message: 'Subscription expired', expiration_date: user.expiration_date });
       }

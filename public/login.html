@@ -24,27 +24,28 @@
   </div>
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const result = await response.json();
-      const loginResult = document.getElementById('loginResult');
-      if (result.success) {
-        localStorage.setItem('userId', result.userId); // Salvando userId no localStorage
-        loginResult.textContent = 'Login successful!';
-        window.location.href = 'dashboard.html'; // Redirecionar para o dashboard
-      } else if (result.message === 'Subscription expired') {
-        localStorage.setItem('expiration_date', new Date(result.expiration_date).toLocaleDateString());
-        window.location.href = 'renew.html'; // Redirecionar para a página de renovação
-      } else {
-        loginResult.textContent = 'Invalid credentials!';
-      }
-    });
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const response = await fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const result = await response.json();
+  const loginResult = document.getElementById('loginResult');
+  if (result.success) {
+    localStorage.setItem('userId', result.userId); // Salvando userId no localStorage
+    if (result.pending) {
+      window.location.href = 'plans.html'; // Redireciona para a página de planos
+    } else {
+      loginResult.textContent = 'Login successful!';
+      window.location.href = 'dashboard.html'; // Redirecionar para o dashboard
+    }
+  } else {
+    loginResult.textContent = result.message || 'Invalid credentials!';
+  }
+});
   </script>
 </body>
 </html>
