@@ -16,7 +16,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Mensal</h5>
             <p class="card-text">R$29,90 por mês</p>
-            <button class="btn btn-primary" onclick="renewSubscription('monthly')">Renovar</button>
+            <button class="btn btn-primary" id="renew-monthly">Renovar</button>
           </div>
         </div>
       </div>
@@ -25,7 +25,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Trimestral</h5>
             <p class="card-text">R$79,90 por 3 meses</p>
-            <button class="btn btn-primary" onclick="renewSubscription('quarterly')">Renovar</button>
+            <button class="btn btn-primary" id="renew-quarterly">Renovar</button>
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Semestral</h5>
             <p class="card-text">R$149,90 por 6 meses</p>
-            <button class="btn btn-primary" onclick="renewSubscription('semiannually')">Renovar</button>
+            <button class="btn btn-primary" id="renew-semiannually">Renovar</button>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Anual</h5>
             <p class="card-text">R$299,90 por ano</p>
-            <button class="btn btn-primary" onclick="renewSubscription('annually')">Renovar</button>
+            <button class="btn btn-primary" id="renew-annually">Renovar</button>
           </div>
         </div>
       </div>
@@ -58,36 +58,53 @@
       } else {
         window.location.href = '/index.html'; // Redirecionar para a página de login se não houver data de expiração
       }
+
+      // Adicionando os event listeners para os botões
+      document.getElementById('renew-monthly').addEventListener('click', function() {
+        renewSubscription('monthly');
+      });
+
+      document.getElementById('renew-quarterly').addEventListener('click', function() {
+        renewSubscription('quarterly');
+      });
+
+      document.getElementById('renew-semiannually').addEventListener('click', function() {
+        renewSubscription('semiannually');
+      });
+
+      document.getElementById('renew-annually').addEventListener('click', function() {
+        renewSubscription('annually');
+      });
     });
 
     function renewSubscription(plan) {
-    const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem('userId');
 
-    if (!userId) {
+      if (!userId) {
         console.error('User ID not found.');
         alert('Erro: Usuário não identificado. Faça login novamente.');
         return;
-    }
+      }
 
-    fetch('/create-renewal-checkout-session', {
+      fetch('/create-renewal-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, plan })
-    })
-    .then(response => response.json())
-    .then(data => {
+      })
+      .then(response => response.json())
+      .then(data => {
         if (data.success) {
-            window.location.href = data.paymentLink;
+          window.location.href = data.paymentLink;
         } else {
-            console.error('Erro ao criar sessão de pagamento:', data.message);
-            alert('Erro ao criar sessão de pagamento.');
+          console.error('Erro ao criar sessão de pagamento:', data.message);
+          alert('Erro ao criar sessão de pagamento.');
         }
-    })
-    .catch(error => {
+      })
+      .catch(error => {
         console.error('Erro ao processar a renovação:', error);
         alert('Erro ao processar a renovação.');
-    });
-}
+      });
+    }
   </script>
 </body>
 </html>

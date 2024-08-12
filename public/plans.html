@@ -16,7 +16,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Mensal</h5>
             <p class="card-text">R$29,90 por mês</p>
-            <button class="btn btn-primary" onclick="choosePlan('monthly')">Escolher</button>
+            <button class="btn btn-primary" id="choose-monthly">Escolher</button>
           </div>
         </div>
       </div>
@@ -25,7 +25,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Trimestral</h5>
             <p class="card-text">R$79,90 por 3 meses</p>
-            <button class="btn btn-primary" onclick="choosePlan('quarterly')">Escolher</button>
+            <button class="btn btn-primary" id="choose-quarterly">Escolher</button>
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Semestral</h5>
             <p class="card-text">R$149,90 por 6 meses</p>
-            <button class="btn btn-primary" onclick="choosePlan('semiannually')">Escolher</button>
+            <button class="btn btn-primary" id="choose-semiannually">Escolher</button>
           </div>
         </div>
       </div>
@@ -43,7 +43,7 @@
           <div class="card-body">
             <h5 class="card-title">Plano Anual</h5>
             <p class="card-text">R$299,90 por ano</p>
-            <button class="btn btn-primary" onclick="choosePlan('annually')">Escolher</button>
+            <button class="btn btn-primary" id="choose-annually">Escolher</button>
           </div>
         </div>
       </div>
@@ -51,26 +51,46 @@
   </div>
 
   <script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+      // Adicionando os event listeners para os botões
+      document.getElementById('choose-monthly').addEventListener('click', function() {
+        choosePlan('monthly');
+      });
+
+      document.getElementById('choose-quarterly').addEventListener('click', function() {
+        choosePlan('quarterly');
+      });
+
+      document.getElementById('choose-semiannually').addEventListener('click', function() {
+        choosePlan('semiannually');
+      });
+
+      document.getElementById('choose-annually').addEventListener('click', function() {
+        choosePlan('annually');
+      });
+    });
+
     function choosePlan(plan) {
-        const userId = localStorage.getItem('userId');
-        fetch('/create-checkout-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, plan })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = data.paymentLink;
-            } else {
-                console.error('Erro ao criar sessão de pagamento:', data.message);
-                alert('Erro ao criar sessão de pagamento.');
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao escolher plano:', error);
-            alert('Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.');
-        });
+      const userId = localStorage.getItem('userId');
+
+      fetch('/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, plan })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = data.paymentLink;
+        } else {
+          console.error('Erro ao criar sessão de pagamento:', data.message);
+          alert('Erro ao criar sessão de pagamento.');
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao escolher plano:', error);
+        alert('Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.');
+      });
     }
   </script>
 </body>
