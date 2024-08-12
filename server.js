@@ -220,6 +220,7 @@ app.post('/create-checkout-session', async (req, res) => {
 
 
 app.post('/create-renewal-checkout-session', async (req, res) => {
+  console.log('Received renewal request:', req.body);
   console.log('/create-renewal-checkout-session endpoint hit');
   const { userId, plan } = req.body;
   console.log('Received data:', req.body); // Logando os dados recebidos

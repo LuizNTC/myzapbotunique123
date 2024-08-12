@@ -61,26 +61,33 @@
     });
 
     function renewSubscription(plan) {
-      const userId = localStorage.getItem('userId');
-      fetch('/create-renewal-checkout-session', {
+    const userId = localStorage.getItem('userId');
+
+    if (!userId) {
+        console.error('User ID not found.');
+        alert('Erro: Usuário não identificado. Faça login novamente.');
+        return;
+    }
+
+    fetch('/create-renewal-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, plan })
-      })
-      .then(response => response.json())
-      .then(data => {
+    })
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-          window.location.href = data.paymentLink;
+            window.location.href = data.paymentLink;
         } else {
-          console.error('Erro ao criar sessão de pagamento:', data.message);
-          alert('Erro ao criar sessão de pagamento.');
+            console.error('Erro ao criar sessão de pagamento:', data.message);
+            alert('Erro ao criar sessão de pagamento.');
         }
-      })
-      .catch(error => {
-        console.error('Erro:', error);
+    })
+    .catch(error => {
+        console.error('Erro ao processar a renovação:', error);
         alert('Erro ao processar a renovação.');
-      });
-    }
+    });
+}
   </script>
 </body>
 </html>
