@@ -324,13 +324,13 @@ app.post('/login', async (req, res) => {
     if (user && await bcrypt.compare(password, user.password)) {
       if (user.subscription_status === 'active') {
         res.status(200).json({ success: true, userId: user.id });
-      } else if (user.subscription_status === 'expired') {
-        res.status(403).json({ success: false, message: 'Subscription expired', redirect: '/renew.html' });
       } else if (user.subscription_status === 'pending') {
-        res.status(403).json({ success: false, message: 'Pending subscription', redirect: '/plans.html' });
+        res.status(200).json({ success: true, userId: user.id, pending: true });
+      } else if (user.subscription_status === 'expired') {
+        res.status(200).json({ success: true, userId: user.id, expired: true });
       }
     } else {
-      res.status(401).json({ success: false, message: 'Invalid credentials' });
+      res.status(401).json({ success: false, message: 'Invalid credentials!' });
     }
   } catch (err) {
     console.error('Error logging in user:', err);
