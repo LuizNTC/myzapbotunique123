@@ -119,7 +119,7 @@ const sendEmail = (to, subject, userName) => {
           <p style="color: #666666; text-align: center;">Estamos felizes em informar que sua assinatura foi ativada com sucesso. Agora você pode acessar a plataforma e aproveitar todos os nossos serviços.</p>
           <p style="color: #666666; text-align: center;">Obrigado por escolher ZapLite!</p>
           <div style="text-align: center;">
-            <a href="https://zaplite.com.br" style="display: inline-block; padding: 10px 20px; color: #ffffff; background-color: #4CAF50; border-radius: 5px; text-decoration: none;">Acessar a Plataforma</a>
+            <a href="https://zaplite.com.br/login.html" style="display: inline-block; padding: 10px 20px; color: #ffffff; background-color: #4CAF50; border-radius: 5px; text-decoration: none;">Acessar a Plataforma</a>
           </div>
           <p style="color: #999999; text-align: center; font-size: 12px; margin-top: 20px;">ZapLite | Todos os direitos reservados</p>
         </div>
@@ -697,7 +697,7 @@ const handlePaymentSuccess = async (userId) => {
       const userEmail = result.rows[0].email;
 
       // Enviar email de confirmação
-      sendEmail(userEmail, 'Subscription Activated', 'Your subscription has been activated. You can now access the platform.');
+      sendEmail(userEmail, 'Pagamento Recebido - ZapLite', 'Boas Novas');
       console.log(`Confirmation email sent to ${userEmail}`);
     } else {
       console.error('User not found for sending email.');

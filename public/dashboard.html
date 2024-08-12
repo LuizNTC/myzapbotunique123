@@ -10,10 +10,11 @@
     @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
     :root {
       --header-height: 3rem;
-      --nav-width: 68px;
+      --nav-width: 250px;
       --first-color: #F26764;
       --first-color-light: #ffd9d9;
       --white-color: #F7F6FB;
+      --grey-color: #f4f4f4;
       --body-font: 'Nunito', sans-serif;
       --normal-font-size: 1rem;
       --z-fixed: 100;
@@ -27,6 +28,7 @@
       padding: 0 1rem;
       font-family: var(--body-font);
       font-size: var(--normal-font-size);
+      background-color: var(--grey-color);
       transition: .5s;
     }
     a {
@@ -50,6 +52,11 @@
       color: var(--first-color);
       font-size: 1.5rem;
       cursor: pointer;
+      z-index: calc(var(--z-fixed) + 1); /* Certifique-se de que o botão fique acima do menu */
+      display: none; /* Inicialmente escondido */
+      position: fixed; /* Agora é fixed para se mover com o menu */
+      right: 1rem;
+      transition: right 0.5s ease; /* Transição suave ao mover */
     }
     .header_img {
       width: 35px;
@@ -62,15 +69,20 @@
     .header_img img {
       width: 40px;
     }
+    .expiration-date {
+      margin-left: 10px;
+      font-weight: 600;
+      color: var(--first-color);
+    }
     .l-navbar {
       position: fixed;
       top: 0;
-      left: 0;
+      left: -100%;
       width: var(--nav-width);
       height: 100vh;
       background-color: var(--first-color);
       padding: .5rem 1rem 0 0;
-      transition: .5s;
+      transition: left 0.5s ease;
       z-index: var(--z-fixed);
     }
     .nav {
@@ -111,10 +123,10 @@
       font-size: 1.25rem;
     }
     .show {
-      left: 0;
+      left: 0; /* Quando visível no desktop */
     }
     .body-pd {
-      padding-left: calc(var(--nav-width) + 1rem);
+      padding-left: var(--nav-width);
     }
     .active {
       color: var(--white-color);
@@ -131,9 +143,8 @@
       height: 100vh;
     }
     #qr-code {
-      width: 300px;
-      height: 300px;
-      margin-top: 20px; /* Adicionado para dar espaçamento ao QR Code */
+      width: 100%;
+      height: auto;
     }
     @media screen and (min-width: 768px) {
       body {
@@ -153,131 +164,211 @@
       }
       .l-navbar {
         left: 0;
-        padding: 1rem 1rem 0 0;
-      }
-      .show {
-        width: calc(var(--nav-width) + 156px);
       }
       .body-pd {
         padding-left: calc(var(--nav-width) + 188px);
       }
     }
     @media screen and (max-width: 768px) {
+      .header_toggle {
+        display: block; /* Mostrar o botão de menu no mobile */
+      }
       .l-navbar {
         left: -100%;
+        width: 250px;
       }
-      .show {
+      .l-navbar.show {
         left: 0;
       }
-      .body-pd {
-        padding-left: 1rem;
+      .header_toggle.move-left {
+        right: calc(var(--nav-width) + 1rem); /* Move o botão para a esquerda junto com o menu */
       }
+    }
+    
+    /* Layout Principal */
+    .main-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+    }
+    .prompt-container {
+      width: 70%;
+      display: flex;
+      flex-direction: column;
+    }
+    .prompt-container textarea {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .prompt-container button {
+      align-self: flex-start;
+      margin-top: 10px;
+    }
+    .control-container {
+      width: 28%;
+      padding-left: 2%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .control-container .control-box {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+    .control-container .control-box h5 {
+      margin-bottom: 1rem;
+    }
+    .control-container .control-box button {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+    .control-container .control-box img {
+      margin: 1rem 0;
+      width: 100%;
+      height: auto;
+    }
+    .control-container .control-box #status {
+      font-weight: bold;
+      margin-top: 1rem;
+      display: block;
     }
   </style>
 </head>
-<body id="body-pd" class="body-pd">
-  <header class="header body-pd" id="header">
+<body id="body-pd">
+  <header class="header" id="header">
     <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
-    <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> <span id="expiration-date"></span> </div>
+    <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
+    <span id="expiration-date" class="expiration-date"></span>
   </header>
-  <div class="l-navbar show" id="nav-bar">
+  <div class="l-navbar" id="nav-bar">
     <nav class="nav">
-      <div> <a href="dashboard.html" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">ZapLite</span> </a>
-        <div class="nav_list"> <a href="#" class="nav_link active"> <i class='bx bx-grid-alt nav_icon'></i> <span class="nav_name">Dashboard</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-user nav_icon'></i> <span class="nav_name">Users</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Messages</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-bookmark nav_icon'></i> <span class="nav_name">Bookmark</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-folder nav_icon'></i> <span class="nav_name">Files</span> </a> 
-          <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> </a> 
+      <div> 
+        <a href="dashboard.html" class="nav_logo"> 
+          <i class='bx bx-layer nav_logo-icon'></i> 
+          <span class="nav_logo-name">ZapLite</span> 
+        </a>
+        <div class="nav_list"> 
+          <a href="#" class="nav_link active"> 
+            <i class='bx bx-grid-alt nav_icon'></i> 
+            <span class="nav_name">Dashboard</span> 
+          </a> 
+          <a href="#" class="nav_link"> 
+            <i class='bx bx-user nav_icon'></i> 
+            <span class="nav_name">Meu Usuário</span> 
+          </a> 
+          <a href="#" class="nav_link"> 
+            <i class='bx bx-bookmark nav_icon'></i> 
+            <span class="nav_name">Planos</span> 
+          </a> 
+          <a href="#" class="nav_link"> 
+            <i class='bx bx-folder nav_icon'></i> 
+            <span class="nav_name">Tutoriais</span> 
+          </a>
         </div>
       </div> 
-      <a href="index.html" class="nav_link"> <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">SignOut</span> </a>
+      <a href="index.html" class="nav_link"> 
+        <i class='bx bx-log-out nav_icon'></i> 
+        <span class="nav_name">SignOut</span> 
+      </a>
     </nav>
   </div>
-  <!--exibição qr code-->
-  <div class="height-100 bg-light">
-    <h4>Main Components</h4>
-    <button id="start-bot" class="btn btn-success btn-block mt-4">Start Bot</button>
-    <button id="stop-bot" class="btn btn-danger btn-block mt-4">Stop Bot</button>
-    <div class="form-group">
-      <label for="prompt">Prompt:</label>
-      <textarea class="form-control" id="prompt" rows="3"></textarea>
-      <button id="save-prompt" class="btn btn-primary btn-block mt-2">Save Prompt</button>
-    </div>
-    <div id="qr-code-container">
-      <img id="qr-code" src="" alt="QR Code" style="display: none;">
-    </div>
-    <div id="status">Waiting to start...</div> <!-- Adicionado para mostrar status -->
-  </div>
-  <!--Container Main end-->
 
+  <!-- Container Principal -->
+  <div class="main-container">
+    <!-- Área do Prompt -->
+    <div class="prompt-container">
+      <div class="form-group">
+        <label for="prompt">Prompt:</label>
+        <textarea class="form-control" id="prompt" rows="10" placeholder="Descreva o seu negócio aqui..."></textarea>
+        <button id="save-prompt" class="btn btn-primary mt-2">Salvar Prompt</button>
+      </div>
+    </div>
+
+    <!-- Área de Controle -->
+    <div class="control-container">
+      <div class="control-box">
+        <h5>Bot Control</h5>
+        <button id="start-bot" class="btn btn-success">Start Bot</button>
+        <button id="stop-bot" class="btn btn-danger">Stop Bot</button>
+        <img id="qr-code" src="" alt="QR Code" style="display: none;">
+        <span id="status">Waiting to start...</span>
+      </div>
+    </div>
+  </div>
+  
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
  
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
-    const userId = localStorage.getItem('userId');
-    if (!userId) {
-      window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
-      return; // Parar a execução do script
-    }
-
-    // Verificar a assinatura do usuário
-    fetch('/verify-subscription', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success && data.active) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
-
-        // Continue carregando o restante do conteúdo, como prompt, status do bot, etc.
-        fetch('/get-prompt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.prompt) {
-            document.getElementById('prompt').value = data.prompt;
-          }
-        });
-
-        fetch('/bot-status', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            if (data.status === 'connected') {
-              document.getElementById('status').textContent = 'WhatsApp connected';
-            }
-          }
-        });
-
-        fetch('/get-expiration-date', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.expirationDate) {
-            document.getElementById('expiration-date').textContent = `Expira em: ${new Date(data.expirationDate).toLocaleDateString()}`;
-          }
-        });
-      } else {
-        window.location.href = '/index.html'; // Redirecionar para a página de login se a assinatura não estiver ativa
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
+        return; // Parar a execução do script
       }
+
+      // Verificar a assinatura do usuário
+      fetch('/verify-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && data.active) {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('content').style.display = 'block';
+
+          // Continue carregando o restante do conteúdo, como prompt, status do bot, etc.
+          fetch('/get-prompt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.prompt) {
+              document.getElementById('prompt').value = data.prompt;
+            }
+          });
+
+          fetch('/bot-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              if (data.status === 'connected') {
+                document.getElementById('status').textContent = 'WhatsApp connected';
+              }
+            }
+          });
+
+          fetch('/get-expiration-date', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.expirationDate) {
+              document.getElementById('expiration-date').textContent = `Expira em: ${new Date(data.expirationDate).toLocaleDateString()}`;
+            }
+          });
+        } else {
+          window.location.href = '/index.html'; // Redirecionar para a página de login se a assinatura não estiver ativa
+        }
+      });
     });
-  });
 
     // Função de salvamento do prompt
     const savePromptButton = document.getElementById('save-prompt');
@@ -356,7 +447,21 @@
         qrCodeImage.style.display = 'none';
       }
     };
+
+    // Toggle menu lateral no mobile
+    const toggleButton = document.getElementById('header-toggle');
+    const navBar = document.getElementById('nav-bar');
+
+    toggleButton.addEventListener('click', () => {
+      navBar.classList.toggle('show');
+      toggleButton.classList.toggle('bx-x');
+      toggleButton.classList.toggle('bx-menu');
+      if (navBar.classList.contains('show')) {
+        toggleButton.classList.add('move-left'); // Move o ícone de "X" para a esquerda junto com o menu
+      } else {
+        toggleButton.classList.remove('move-left'); // Volta o ícone de hambúrguer para a posição original
+      }
+    });
   </script>
-  
 </body>
 </html>
