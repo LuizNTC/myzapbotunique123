@@ -359,22 +359,30 @@ app.post('/create-renewal-checkout-session', async (req, res) => {
 });
 
 
-app.post('/get-expiration-date', authenticate, async (req, res) => {
+app.post('/get-expiration-date', async (req, res) => {
   const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, message: 'User ID is required' });
+  }
+
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT expiration_date FROM users WHERE id = $1', [userId]);
     if (result.rows.length === 0) {
-      throw new Error('No user found with the provided userId');
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
-    res.status(200).json({ success: true, expirationDate: result.rows[0].expiration_date });
+
+    const expirationDate = result.rows[0].expiration_date;
+    return res.status(200).json({ success: true, expirationDate });
   } catch (err) {
-    console.error('Error getting expiration date:', err);
-    res.status(500).json({ success: false, message: 'Error getting expiration date' });
+    console.error('Error fetching expiration date:', err);
+    return res.status(500).json({ success: false, message: 'Error fetching expiration date' });
   } finally {
     client.release();
   }
 });
+
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;

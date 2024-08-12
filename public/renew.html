@@ -55,7 +55,6 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function (event) {
-      const expirationDate = localStorage.getItem('expiration_date');
       const userId = localStorage.getItem('userId');
 
       if (!userId) {
@@ -63,31 +62,27 @@
         return;
       }
 
-      if (expirationDate) {
-        document.getElementById('expiration-date').textContent = expirationDate;
-      } else {
-        // Se a data de expiração não estiver no localStorage, talvez seja necessário obtê-la do servidor
-        fetch('/get-expiration-date', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId })
-        })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.expirationDate) {
-              localStorage.setItem('expiration_date', data.expirationDate);
-              document.getElementById('expiration-date').textContent = data.expirationDate;
-            } else {
-              alert('Erro ao obter a data de expiração. Faça login novamente.');
-              window.location.href = '/index.html';
-            }
-          })
-          .catch(error => {
-            console.error('Erro ao obter a data de expiração:', error);
-            alert('Erro ao processar a renovação. Faça login novamente.');
+      // Obter a data de expiração do servidor, se necessário
+      fetch('/get-expiration-date', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.expirationDate) {
+            localStorage.setItem('expiration_date', data.expirationDate);
+            document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
+          } else {
+            alert('Erro ao obter a data de expiração. Faça login novamente.');
             window.location.href = '/index.html';
-          });
-      }
+          }
+        })
+        .catch(error => {
+          console.error('Erro ao obter a data de expiração:', error);
+          alert('Erro ao processar a renovação. Faça login novamente.');
+          window.location.href = '/index.html';
+        });
 
       // Adicionando os event listeners para os botões
       document.getElementById('renew-monthly').addEventListener('click', function () {
@@ -116,7 +111,7 @@
         return;
       }
 
-      fetch('/create-checkout-session', {
+      fetch('/create-renewal-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, plan })
