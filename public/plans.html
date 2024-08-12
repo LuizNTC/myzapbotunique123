@@ -71,27 +71,34 @@
     });
 
     function choosePlan(plan) {
-      const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem('userId');
+    
+    if (!userId) {
+        console.error('User ID not found.');
+        alert('Erro: Usuário não identificado. Faça login novamente.');
+        return;
+    }
 
-      fetch('/create-checkout-session', {
+    fetch('/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, plan })
-      })
-      .then(response => response.json())
-      .then(data => {
+    })
+    .then(response => response.json())
+    .then(data => {
         if (data.success) {
-          window.location.href = data.paymentLink;
+            window.location.href = data.paymentLink;
         } else {
-          console.error('Erro ao criar sessão de pagamento:', data.message);
-          alert('Erro ao criar sessão de pagamento.');
+            console.error('Erro ao criar sessão de pagamento:', data.message);
+            alert('Erro ao criar sessão de pagamento.');
         }
-      })
-      .catch(error => {
+    })
+    .catch(error => {
         console.error('Erro ao escolher plano:', error);
         alert('Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.');
-      });
-    }
+    });
+}
+
   </script>
 </body>
 </html>

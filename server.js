@@ -324,11 +324,10 @@ app.post('/login', async (req, res) => {
     if (user && await bcrypt.compare(password, user.password)) {
       if (user.subscription_status === 'active') {
         res.status(200).json({ success: true, userId: user.id });
+      } else if (user.subscription_status === 'expired') {
+        res.status(403).json({ success: false, message: 'Subscription expired', redirect: '/renew.html' });
       } else if (user.subscription_status === 'pending') {
-        // Redireciona o usuário para a página de planos
-        res.status(200).json({ success: true, pending: true });
-      } else {
-        res.status(403).json({ success: false, message: 'Subscription expired', expiration_date: user.expiration_date });
+        res.status(403).json({ success: false, message: 'Pending subscription', redirect: '/plans.html' });
       }
     } else {
       res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -340,6 +339,7 @@ app.post('/login', async (req, res) => {
     client.release();
   }
 });
+
 
 app.post('/set-prompt', authenticate, async (req, res) => {
   const { userId, prompt } = req.body;
