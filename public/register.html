@@ -1,48 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Registrar-se - ZapLite</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Fontes -->
+    <link href="login_front/fonts/lato.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="login_front/css/font-awesome.min.css">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="login_front/css/style.css">
 </head>
 <body>
-  <div class="container">
-    <h2>Register</h2>
-    <form id="registerForm">
-      <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" class="form-control" id="username" required>
-      </div>
-      <div class="form-group">
-        <label for="name">Name:</label>
-        <input type="text" class="form-control" id="name" required>
-      </div>
-      <div class="form-group">
-        <label for="phone">Phone:</label>
-        <input type="text" class="form-control" id="phone" required>
-      </div>
-      <div class="form-group">
-        <label for="registerEmail">Email:</label>
-        <input type="email" class="form-control" id="registerEmail" required>
-      </div>
-      <div class="form-group">
-        <label for="registerPassword">Password:</label>
-        <input type="password" class="form-control" id="registerPassword" required>
-      </div>
-      <div class="form-group">
-        <label for="plan">Select Plan:</label>
-        <select class="form-control" id="plan" required>
-          <option value="monthly">Monthly - R$29.90</option>
-          <option value="quarterly">Quarterly - R$79.90</option>
-          <option value="semiannually">Semiannually - R$149.90</option>
-          <option value="annually">Annually - R$299.90</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">Register</button>
-    </form>
-    <div id="registerResult"></div>
-  </div>
+    <section class="ftco-section">
+        <div class="container">
+            <div class="spaceadvanced">
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-10">
+                    <div class="wrap d-md-flex">
+                        <div class="img" style="background-image: url('login_front/images/bg-1.jpg');"></div>
+                        <div class="login-wrap p-4 p-md-5">
+                            <div class="d-flex">
+                                <div class="w-100">
+                                    <h3 class="mb-4">Criar Nova Conta ZapLite</h3>
+                                </div>
+                            </div>
+                            <!-- Formulário de Registro -->
+                            <form id="registerForm" class="signin-form">
+                                <div class="form-group mb-3">
+                                    <label class="label" for="username">Nome do seu Negócio</label>
+                                    <input type="text" class="form-control" id="username" placeholder="Seu Negócio" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="label" for="name">Nome Completo</label>
+                                    <input type="text" class="form-control" id="name" placeholder="Seu Nome Completo" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="label" for="phone">Telefone</label>
+                                    <input type="text" class="form-control" id="phone" placeholder="Seu Telefone (DDD + Número)" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="label" for="registerEmail">Email</label>
+                                    <input type="email" class="form-control" id="registerEmail" placeholder="Seu Melhor Email" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="label" for="registerPassword">Senha</label>
+                                    <input type="password" class="form-control" id="registerPassword" placeholder="Crie uma Senha" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="label" for="plan">Selecione o Plano</label>
+                                    <select class="form-control" id="plan" required>
+                                        <option value="monthly">Mensal TESTE</option>
+                                        <option value="quarterly">Trimestral - R$197,90</option>
+                                        <option value="semiannually">Semestral - R$373,80</option>
+                                        <option value="annually">Anual - R$670,80</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="form-control btn btn-primary rounded submit px-3">Registrar-se</button>
+                                </div>
+                            </form>
+                            <p class="text-center">Já possui conta? <a href="/login">Acesse sua conta</a></p>
+                            <!-- Resultado do Registro -->
+                            <div id="registerResult"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
   <script>
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();

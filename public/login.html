@@ -1,54 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Login ZapLite - Acesse sua conta</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Fontes -->
+    <link href="login_front/fonts/lato.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="login_front/css/font-awesome.min.css">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="login_front/css/style.css">
 </head>
 <body>
-  <div class="container">
-    <h2>Login</h2>
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="loginEmail">Email:</label>
-        <input type="email" class="form-control" id="loginEmail" required>
-      </div>
-      <div class="form-group">
-        <label for="loginPassword">Password:</label>
-        <input type="password" class="form-control" id="loginPassword" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Login</button>
-    </form>
-    <div id="loginResult"></div>
-  </div>
-  
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-  const response = await fetch('/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
-  });
-  const result = await response.json();
-  const loginResult = document.getElementById('loginResult');
-  if (result.success) {
-    localStorage.setItem('userId', result.userId); // Salvando userId no localStorage
-    if (result.pending) {
-      window.location.href = 'plans.html'; // Redireciona para a página de planos
-    } else if (result.expired) {
-      window.location.href = 'renew.html'; // Redireciona para a página de renovação
-    } else {
-      loginResult.textContent = 'Login successful!';
-      window.location.href = 'dashboard.html'; // Redireciona para o dashboard
-    }
-  } else {
-    loginResult.textContent = result.message || 'Invalid credentials!';
-  }
-});
-  </script>
+    <section class="ftco-section">
+        <div class="container">
+            <div class="spaceadvanced">
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-md-12 col-lg-10">
+                    <div class="wrap d-md-flex">
+                        <div class="img" style="background-image: url('login_front/images/bg-1.jpg');"></div>
+                        <div class="login-wrap p-4 p-md-5">
+                            <div class="d-flex">
+                                <div class="w-100">
+                                    <h3 class="mb-4">Acessar Minha Conta</h3>
+                                </div>
+                            </div>
+                            <!-- Formulário de Login -->
+                            <form id="loginForm" class="signin-form">
+                                <div class="form-group mb-3">
+                                    <label class="label" for="loginEmail">Email</label>
+                                    <input type="email" class="form-control" id="loginEmail" placeholder="Seu Email" required>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="label" for="loginPassword">Senha</label>
+                                    <input type="password" class="form-control" id="loginPassword" placeholder="Sua Senha" required>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="form-control btn btn-primary rounded submit px-3">Acessar Conta</button>
+                                </div>
+                                <div class="form-group d-md-flex">
+                                  <div class="w-50 text-left">
+                                      <label class="checkbox-wrap mb-0">
+                                          <input type="checkbox" checked> Lembrar-se
+                                      </label>
+                                  </div>
+                                  <div class="w-50 text-md-right">
+                                      <a href="#">Esqueci a Senha</a>
+                                  </div>
+                              </div>
+                              
+                            </form>
+                            <p class="text-center">Não possui conta? <a data-toggle="tab" href="/register">REGISTRAR-SE</a></p>
+                            <!-- Resultado do Login -->
+                            <div id="loginResult"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- jQuery -->
+    <script src="login_front/js/jquery.min.js"></script>
+    <!-- Popper.js -->
+    <script src="login_front/js/popper.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="login_front/js/bootstrap.min.js"></script>
+    <!-- JS Principal -->
+    <script src="login_front/js/main.js"></script>
+
+    <!-- Script de Login -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const result = await response.json();
+            const loginResult = document.getElementById('loginResult');
+            if (result.success) {
+                localStorage.setItem('userId', result.userId); // Salvando userId no localStorage
+                if (result.pending) {
+                    window.location.href = 'plans.html'; // Redireciona para a página de planos
+                } else if (result.expired) {
+                    window.location.href = 'renew.html'; // Redireciona para a página de renovação
+                } else {
+                    loginResult.textContent = 'Login successful!';
+                    window.location.href = 'dashboard.html'; // Redireciona para o dashboard
+                }
+            } else {
+                loginResult.textContent = result.message || 'Invalid credentials!';
+            }
+        });
+    </script>
+
+
+    
+
 </body>
 </html>

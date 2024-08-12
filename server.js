@@ -156,25 +156,26 @@ app.post('/create-checkout-session', async (req, res) => {
       let expirationDate = new Date();
       switch (plan) {
         case 'monthly':
-          price = 29.90;
+          price = 5.00;  // Alterado para R$5,00
           expirationDate.setMonth(expirationDate.getMonth() + 1);
           break;
         case 'quarterly':
-          price = 79.90;
+          price = 197.90;  // Alterado para R$197,90
           expirationDate.setMonth(expirationDate.getMonth() + 3);
           break;
         case 'semiannually':
-          price = 149.90;
+          price = 373.80;  // Alterado para R$373,80
           expirationDate.setMonth(expirationDate.getMonth() + 6);
           break;
         case 'annually':
-          price = 299.90;
+          price = 670.80;  // Alterado para R$670,80
           expirationDate.setFullYear(expirationDate.getFullYear() + 1);
           break;
         default:
-          price = 29.90;
+          price = 5.00;  // Definido para R$5,00 como padrão durante os testes
           expirationDate.setMonth(expirationDate.getMonth() + 1);
       }
+
 
       await client.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [expirationDate, userId]);
 
@@ -226,25 +227,26 @@ app.post('/create-checkout-session', async (req, res) => {
       let expirationDate = new Date();
       switch (plan) {
         case 'monthly':
-          price = 29.90;
+          price = 5.00;  // Alterado para R$5,00
           expirationDate.setMonth(expirationDate.getMonth() + 1);
           break;
         case 'quarterly':
-          price = 79.90;
+          price = 197.90;  // Alterado para R$197,90
           expirationDate.setMonth(expirationDate.getMonth() + 3);
           break;
         case 'semiannually':
-          price = 149.90;
+          price = 373.80;  // Alterado para R$373,80
           expirationDate.setMonth(expirationDate.getMonth() + 6);
           break;
         case 'annually':
-          price = 299.90;
+          price = 670.80;  // Alterado para R$670,80
           expirationDate.setFullYear(expirationDate.getFullYear() + 1);
           break;
         default:
-          price = 29.90;
+          price = 5.00;  // Definido para R$5,00 como padrão durante os testes
           expirationDate.setMonth(expirationDate.getMonth() + 1);
       }
+
 
       await client.query('UPDATE users SET expiration_date = $1 WHERE id = $2', [expirationDate, newUserId]);
 
@@ -479,44 +481,44 @@ const processQueue = () => {
     console.log(`Sending prompt to API: ${fullPrompt}`);
 
     axios.post(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-      "contents": [{"parts": [{"text": fullPrompt}]}]
+      "contents": [{ "parts": [{ "text": fullPrompt }] }]
     })
-    .then((response) => {
-      console.log('API response:', response.data);
+      .then((response) => {
+        console.log('API response:', response.data);
 
-      if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content) {
-        const contentParts = response.data.candidates[0].content.parts;
-        const reply = contentParts.map(part => part.text).join("\n");
-        console.log('Gemini response:', reply);
+        if (response.data && response.data.candidates && response.data.candidates[0] && response.data.candidates[0].content) {
+          const contentParts = response.data.candidates[0].content.parts;
+          const reply = contentParts.map(part => part.text).join("\n");
+          console.log('Gemini response:', reply);
 
-        session.history.push(`IA: ${reply}`);
-        sessions[message.from] = session;
+          session.history.push(`IA: ${reply}`);
+          sessions[message.from] = session;
 
-        client.sendText(message.from, reply)
-          .then(() => {
-            console.log('Message sent successfully');
-            isProcessingQueue = false;
-            processQueue();
-          })
-          .catch((err) => {
-            console.log('Error sending message:', err);
-            isProcessingQueue = false;
-            processQueue();
-          });
-      } else {
-        throw new Error('Unexpected response structure');
-      }
-    })
-    .catch((err) => {
-      if (err.response && err.response.status === 429 && retries > 0) {
-        console.log(`Error 429 received. Retrying in 10 seconds... (${retries} retries left)`);
-        setTimeout(() => tryRequest(retries - 1), 10000);
-      } else {
-        console.log('Error calling Gemini API:', err.message || err);
-        isProcessingQueue = false;
-        processQueue();
-      }
-    });
+          client.sendText(message.from, reply)
+            .then(() => {
+              console.log('Message sent successfully');
+              isProcessingQueue = false;
+              processQueue();
+            })
+            .catch((err) => {
+              console.log('Error sending message:', err);
+              isProcessingQueue = false;
+              processQueue();
+            });
+        } else {
+          throw new Error('Unexpected response structure');
+        }
+      })
+      .catch((err) => {
+        if (err.response && err.response.status === 429 && retries > 0) {
+          console.log(`Error 429 received. Retrying in 10 seconds... (${retries} retries left)`);
+          setTimeout(() => tryRequest(retries - 1), 10000);
+        } else {
+          console.log('Error calling Gemini API:', err.message || err);
+          isProcessingQueue = false;
+          processQueue();
+        }
+      });
   };
 
   tryRequest(3);
@@ -537,7 +539,7 @@ const startBot = async (userId) => {
       throw new Error('No user found with the provided userId');
     }
     const prompt = result.rows[0].prompt || "Default prompt";
-    
+
     create(
       sessionName,
       (base64Qr, asciiQR) => {
@@ -639,7 +641,7 @@ app.post('/webhook', express.json(), async (req, res) => {
   console.log('Webhook received:', req.body);
 
   const { type, data } = req.body;
-  
+
   if (type === 'payment') {
     const paymentId = data.id;
 
