@@ -9,7 +9,7 @@
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
     :root {
-      --header-height: 3rem;
+      --header-height: 60px;
       --nav-width: 250px;
       --first-color: #F26764;
       --first-color-light: #ffd9d9;
@@ -23,9 +23,7 @@
       box-sizing: border-box;
     }
     body {
-      position: relative;
-      margin: var(--header-height) 0 0 0;
-      padding: 0 1rem;
+      margin: 0;
       font-family: var(--body-font);
       font-size: var(--normal-font-size);
       background-color: var(--grey-color);
@@ -46,17 +44,12 @@
       padding: 0 1rem;
       background-color: var(--white-color);
       z-index: var(--z-fixed);
-      transition: .5s;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .header_toggle {
       color: var(--first-color);
       font-size: 1.5rem;
       cursor: pointer;
-      z-index: calc(var(--z-fixed) + 1); /* Certifique-se de que o botão fique acima do menu */
-      display: none; /* Inicialmente escondido */
-      position: fixed; /* Agora é fixed para se mover com o menu */
-      right: 1rem;
-      transition: right 0.5s ease; /* Transição suave ao mover */
     }
     .header_img {
       width: 35px;
@@ -76,14 +69,17 @@
     }
     .l-navbar {
       position: fixed;
-      top: 0;
+      top: var(--header-height);
       left: -100%;
       width: var(--nav-width);
-      height: 100vh;
+      height: calc(100vh - var(--header-height));
       background-color: var(--first-color);
       padding: .5rem 1rem 0 0;
       transition: left 0.5s ease;
       z-index: var(--z-fixed);
+    }
+    .l-navbar.show {
+      left: 0;
     }
     .nav {
       height: 100%;
@@ -122,12 +118,6 @@
     .nav_icon {
       font-size: 1.25rem;
     }
-    .show {
-      left: 0; /* Quando visível no desktop */
-    }
-    .body-pd {
-      padding-left: var(--nav-width);
-    }
     .active {
       color: var(--white-color);
     }
@@ -146,50 +136,11 @@
       width: 100%;
       height: auto;
     }
-    @media screen and (min-width: 768px) {
-      body {
-        margin: calc(var(--header-height) + 1rem) 0 0 0;
-        padding-left: calc(var(--nav-width) + 2rem);
-      }
-      .header {
-        height: calc(var(--header-height) + 1rem);
-        padding: 0 2rem 0 calc(var(--nav-width) + 2rem);
-      }
-      .header_img {
-        width: 40px;
-        height: 40px;
-      }
-      .header_img img {
-        width: 45px;
-      }
-      .l-navbar {
-        left: 0;
-      }
-      .body-pd {
-        padding-left: calc(var(--nav-width) + 188px);
-      }
-    }
-    @media screen and (max-width: 768px) {
-      .header_toggle {
-        display: block; /* Mostrar o botão de menu no mobile */
-      }
-      .l-navbar {
-        left: -100%;
-        width: 250px;
-      }
-      .l-navbar.show {
-        left: 0;
-      }
-      .header_toggle.move-left {
-        right: calc(var(--nav-width) + 1rem); /* Move o botão para a esquerda junto com o menu */
-      }
-    }
-    
-    /* Layout Principal */
     .main-container {
+      margin-top: calc(var(--header-height) + 1rem);
       display: flex;
       justify-content: space-between;
-      margin-top: 2rem;
+      padding: 1rem;
     }
     .prompt-container {
       width: 70%;
@@ -238,14 +189,48 @@
       margin-top: 1rem;
       display: block;
     }
+    /* Adicione este estilo para empurrar o conteúdo para a direita quando o menu estiver aberto */
+.body-pd {
+  padding-left: var(--nav-width);
+}
+
+
+    @media screen and (max-width: 768px) {
+      .header_toggle {
+        display: block;
+      }
+        /* No mobile, remover o padding-left para não afetar o layout */
+  .body-pd {
+    padding-left: 0;
+  }
+      .l-navbar {
+        left: -100%;
+        width: 250px;
+      }
+      .l-navbar.show {
+        left: 0;
+      }
+      .main-container {
+        flex-direction: column;
+      }
+      .prompt-container {
+        width: 100%;
+      }
+      .control-container {
+        width: 100%;
+        padding-left: 0;
+        margin-top: 1rem;
+      }
+    }
   </style>
 </head>
-<body id="body-pd">
-  <header class="header" id="header">
+<body>
+  <header class="header">
     <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
     <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
-    <span id="expiration-date" class="expiration-date"></span>
+    <span id="expiration-date" class="expiration-date">Expira em: 12/12/2024</span>
   </header>
+
   <div class="l-navbar" id="nav-bar">
     <nav class="nav">
       <div> 
@@ -308,7 +293,7 @@
  
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
-      const userId = localStorage.getItem('userId');
+        const userId = localStorage.getItem('userId');
       if (!userId) {
         window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
         return; // Parar a execução do script
@@ -448,20 +433,28 @@
       }
     };
 
-    // Toggle menu lateral no mobile
-    const toggleButton = document.getElementById('header-toggle');
-    const navBar = document.getElementById('nav-bar');
+// Toggle menu lateral no mobile e desktop
+const toggleButton = document.getElementById('header-toggle');
+const navBar = document.getElementById('nav-bar');
+const bodyPd = document.body;
 
-    toggleButton.addEventListener('click', () => {
-      navBar.classList.toggle('show');
-      toggleButton.classList.toggle('bx-x');
-      toggleButton.classList.toggle('bx-menu');
-      if (navBar.classList.contains('show')) {
-        toggleButton.classList.add('move-left'); // Move o ícone de "X" para a esquerda junto com o menu
-      } else {
-        toggleButton.classList.remove('move-left'); // Volta o ícone de hambúrguer para a posição original
-      }
-    });
+toggleButton.addEventListener('click', () => {
+  navBar.classList.toggle('show');
+  toggleButton.classList.toggle('bx-x');
+  toggleButton.classList.toggle('bx-menu');
+
+  // Adicionar ou remover a classe body-pd no desktop
+  if (window.innerWidth > 768) {
+    bodyPd.classList.toggle('body-pd');
+  }
+});
+
+// Abrir o menu por padrão no desktop e ajustar o conteúdo
+if (window.innerWidth > 768) {
+  navBar.classList.add('show');
+  bodyPd.classList.add('body-pd');
+}
+
   </script>
 </body>
 </html>
