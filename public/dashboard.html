@@ -28,6 +28,7 @@
       font-size: var(--normal-font-size);
       background-color: var(--grey-color);
       transition: .5s;
+      display: none; /* Esconde o conteúdo até a verificação */
     }
     a {
       text-decoration: none;
@@ -119,7 +120,7 @@
       font-size: 1.25rem;
     }
     .active {
-      color: var(--white-color);
+      color: var (--white-color);
     }
     .active::before {
       content: '';
@@ -189,19 +190,37 @@
       margin-top: 1rem;
       display: block;
     }
-    /* Adicione este estilo para empurrar o conteúdo para a direita quando o menu estiver aberto */
-.body-pd {
-  padding-left: var(--nav-width);
-}
+    .body-pd {
+      padding-left: var(--nav-width);
+    }
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 1.5rem;
+      color: var(--first-color);
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .spinner {
+      border: 6px solid var(--grey-color);
+      border-top: 6px solid var(--first-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
 
     @media screen and (max-width: 768px) {
       .header_toggle {
         display: block;
       }
-        /* No mobile, remover o padding-left para não afetar o layout */
-  .body-pd {
-    padding-left: 0;
-  }
+      .body-pd {
+        padding-left: 0;
+      }
       .l-navbar {
         left: -100%;
         width: 250px;
@@ -224,72 +243,81 @@
   </style>
 </head>
 <body>
-  <header class="header">
-    <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
-    <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
-    <span class="expiration-date">Expira em: <span id="expiration-date"></span></span>
-  </header>
+  <!-- Tela de carregamento -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span style="margin-left: 10px;">Aguarde...</span>
+  </div>
 
-  <div class="l-navbar" id="nav-bar">
-    <nav class="nav">
-      <div> 
-        <a href="dashboard.html" class="nav_logo"> 
-          <i class='bx bx-layer nav_logo-icon'></i> 
-          <span class="nav_logo-name">ZapLite</span> 
-        </a>
-        <div class="nav_list"> 
-          <a href="#" class="nav_link active"> 
-            <i class='bx bx-grid-alt nav_icon'></i> 
-            <span class="nav_name">Dashboard</span> 
-          </a> 
-          <a href="#" class="nav_link"> 
-            <i class='bx bx-user nav_icon'></i> 
-            <span class="nav_name">Meu Usuário</span> 
-          </a> 
-          <a href="#" class="nav_link"> 
-            <i class='bx bx-bookmark nav_icon'></i> 
-            <span class="nav_name">Planos</span> 
-          </a> 
-          <a href="#" class="nav_link"> 
-            <i class='bx bx-folder nav_icon'></i> 
-            <span class="nav_name">Tutoriais</span> 
+  <!-- Conteúdo do dashboard, inicialmente oculto -->
+  <div id="dashboard-content" style="display: none;">
+    <header class="header">
+      <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
+      <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
+      <span class="expiration-date">Expira em: <span id="expiration-date"></span></span>
+    </header>
+
+    <div class="l-navbar" id="nav-bar">
+      <nav class="nav">
+        <div>
+          <a href="dashboard.html" class="nav_logo">
+            <i class='bx bx-layer nav_logo-icon'></i>
+            <span class="nav_logo-name">ZapLite</span>
           </a>
+          <div class="nav_list">
+            <a href="#" class="nav_link active">
+              <i class='bx bx-grid-alt nav_icon'></i>
+              <span class="nav_name">Dashboard</span>
+            </a>
+            <a href="#" class="nav_link">
+              <i class='bx bx-user nav_icon'></i>
+              <span class="nav_name">Meu Usuário</span>
+            </a>
+            <a href="#" class="nav_link">
+              <i class='bx bx-bookmark nav_icon'></i>
+              <span class="nav_name">Planos</span>
+            </a>
+            <a href="#" class="nav_link">
+              <i class='bx bx-folder nav_icon'></i>
+              <span class="nav_name">Tutoriais</span>
+            </a>
+          </div>
         </div>
-      </div> 
-      <a href="index.html" class="nav_link"> 
-        <i class='bx bx-log-out nav_icon'></i> 
-        <span class="nav_name">Deslogar</span> 
-      </a>
-    </nav>
-  </div>
-
-  <!-- Container Principal -->
-  <div class="main-container">
-    <!-- Área do Prompt -->
-    <div class="prompt-container">
-      <div class="form-group">
-        <label for="prompt">Prompt:</label>
-        <textarea class="form-control" id="prompt" rows="10" placeholder="Descreva o seu negócio aqui..."></textarea>
-        <button id="save-prompt" class="btn btn-primary mt-2">Salvar Prompt</button>
-      </div>
+        <a href="index.html" class="nav_link">
+          <i class='bx bx-log-out nav_icon'></i>
+          <span class="nav_name">Deslogar</span>
+        </a>
+      </nav>
     </div>
 
-    <!-- Área de Controle -->
-    <div class="control-container">
-      <div class="control-box">
-        <h5>Bot Control</h5>
-        <button id="start-bot" class="btn btn-success">Iniciar Bot</button>
-        <button id="stop-bot" class="btn btn-danger">Parar Bot</button>
-        <img id="qr-code" src="" alt="QR Code" style="display: none;">
-        <span id="status">Seu BOT está DESLIGADO.</span>
+    <!-- Container Principal -->
+    <div class="main-container">
+      <!-- Área do Prompt -->
+      <div class="prompt-container">
+        <div class="form-group">
+          <label for="prompt">Prompt:</label>
+          <textarea class="form-control" id="prompt" rows="10" placeholder="Descreva o seu negócio aqui..."></textarea>
+          <button id="save-prompt" class="btn btn-primary mt-2">Salvar Prompt</button>
+        </div>
+      </div>
+
+      <!-- Área de Controle -->
+      <div class="control-container">
+        <div class="control-box">
+          <h5>Bot Control</h5>
+          <button id="start-bot" class="btn btn-success">Iniciar Bot</button>
+          <button id="stop-bot" class="btn btn-danger">Parar Bot</button>
+          <img id="qr-code" src="" alt="QR Code" style="display: none;">
+          <span id="status">Seu BOT está DESLIGADO.</span>
+        </div>
       </div>
     </div>
   </div>
-  
+
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
- 
+
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
       const userId = localStorage.getItem('userId');
@@ -307,6 +335,11 @@
       .then(response => response.json())
       .then(data => {
         if (data.success && data.active) {
+          // Exibir o conteúdo do dashboard
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('dashboard-content').style.display = 'block';
+          document.body.style.display = 'block';  // Exibir o body
+
           // Exibir data de vencimento
           fetch('/get-expiration-date', {
             method: 'POST',
@@ -430,28 +463,27 @@
       }
     };
 
-// Toggle menu lateral no mobile e desktop
-const toggleButton = document.getElementById('header-toggle');
-const navBar = document.getElementById('nav-bar');
-const bodyPd = document.body;
+    // Toggle menu lateral no mobile e desktop
+    const toggleButton = document.getElementById('header-toggle');
+    const navBar = document.getElementById('nav-bar');
+    const bodyPd = document.body;
 
-toggleButton.addEventListener('click', () => {
-  navBar.classList.toggle('show');
-  toggleButton.classList.toggle('bx-x');
-  toggleButton.classList.toggle('bx-menu');
+    toggleButton.addEventListener('click', () => {
+      navBar.classList.toggle('show');
+      toggleButton.classList.toggle('bx-x');
+      toggleButton.classList.toggle('bx-menu');
 
-  // Adicionar ou remover a classe body-pd no desktop
-  if (window.innerWidth > 768) {
-    bodyPd.classList.toggle('body-pd');
-  }
-});
+      // Adicionar ou remover a classe body-pd no desktop
+      if (window.innerWidth > 768) {
+        bodyPd.classList.toggle('body-pd');
+      }
+    });
 
-// Abrir o menu por padrão no desktop e ajustar o conteúdo
-if (window.innerWidth > 768) {
-  navBar.classList.add('show');
-  bodyPd.classList.add('body-pd');
-}
-
+    // Abrir o menu por padrão no desktop e ajustar o conteúdo
+    if (window.innerWidth > 768) {
+      navBar.classList.add('show');
+      bodyPd.classList.add('body-pd');
+    }
   </script>
 </body>
 </html>
