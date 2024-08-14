@@ -12,7 +12,7 @@
       --header-height: 60px;
       --nav-width: 250px;
       --first-color: #F26764;
-      --first-color-light: #ffd9d9;
+      --first-color-light: #ffd7d7;
       --white-color: #F7F6FB;
       --grey-color: #f4f4f4;
       --body-font: 'Nunito', sans-serif;
@@ -194,7 +194,6 @@
   padding-left: var(--nav-width);
 }
 
-
     @media screen and (max-width: 768px) {
       .header_toggle {
         display: block;
@@ -228,7 +227,7 @@
   <header class="header">
     <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
     <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
-    <span id="expiration-date" class="expiration-date">Expira em: 12/12/2024</span>
+    <span id="expiration-date" class="expiration-date">Expira em: <span id="expiration-date"></span></span>
   </header>
 
   <div class="l-navbar" id="nav-bar">
@@ -259,7 +258,7 @@
       </div> 
       <a href="index.html" class="nav_link"> 
         <i class='bx bx-log-out nav_icon'></i> 
-        <span class="nav_name">SignOut</span> 
+        <span class="nav_name">Deslogar</span> 
       </a>
     </nav>
   </div>
@@ -279,10 +278,10 @@
     <div class="control-container">
       <div class="control-box">
         <h5>Bot Control</h5>
-        <button id="start-bot" class="btn btn-success">Start Bot</button>
-        <button id="stop-bot" class="btn btn-danger">Stop Bot</button>
+        <button id="start-bot" class="btn btn-success">Iniciar Bot</button>
+        <button id="stop-bot" class="btn btn-danger">Parar Bot</button>
         <img id="qr-code" src="" alt="QR Code" style="display: none;">
-        <span id="status">Waiting to start...</span>
+        <span id="status">Seu BOT está DESLIGADO.</span>
       </div>
     </div>
   </div>
@@ -293,11 +292,7 @@
  
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
-        const userId = localStorage.getItem('userId');
-      if (!userId) {
-        window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
-        return; // Parar a execução do script
-      }
+
 
       // Verificar a assinatura do usuário
       fetch('/verify-subscription', {
@@ -346,7 +341,7 @@
           .then(response => response.json())
           .then(data => {
             if (data.success && data.expirationDate) {
-              document.getElementById('expiration-date').textContent = `Expira em: ${new Date(data.expirationDate).toLocaleDateString()}`;
+              document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
             }
           });
         } else {
@@ -368,9 +363,9 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert('Prompt saved successfully');
+          alert('Prompt salvo com sucesso!');
         } else {
-          alert('Failed to save prompt');
+          alert('Falha ao salvar o Prompt');
         }
       });
     });
