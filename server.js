@@ -489,7 +489,7 @@ app.post('/get-prompt', authenticate, async (req, res) => {
 });
 
 app.post('/start-bot', authenticate, (req, res) => {
-  console.log('Received request to start bot');
+  console.log('Received request to start bot with userId:', req.body.userId);  // Adicionar log aqui
   const { userId } = req.body;
   startBot(userId);
   res.json({ success: true });
