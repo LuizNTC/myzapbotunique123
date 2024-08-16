@@ -585,6 +585,8 @@ const startBot = async (userId) => {
     }
     const prompt = result.rows[0].prompt || "Default prompt";
 
+    console.log('Starting WhatsApp bot creation process...');
+    
     create(
       sessionName,
       (base64Qr, asciiQR) => {
@@ -642,6 +644,7 @@ const startBot = async (userId) => {
     client.release();
   }
 };
+
 
 const stopBot = (userId) => {
   const sessionName = `session_${userId}`;
