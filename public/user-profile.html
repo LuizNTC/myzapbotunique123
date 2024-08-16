@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu Usuário</title>
+  <link href="assets/img/favicon.png" rel="icon">
+  <title>Meu Usuário - ZapLite</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.1/css/boxicons.min.css" rel="stylesheet">
   <style>
@@ -234,7 +235,7 @@
               <i class='bx bx-user nav_icon'></i>
               <span class="nav_name">Meu Usuário</span>
             </a>
-            <a href="#" class="nav_link">
+            <a href="renovarassinatura.html" class="nav_link">
               <i class='bx bx-bookmark nav_icon'></i>
               <span class="nav_name">Planos</span>
             </a>
@@ -339,6 +340,19 @@
           }
         });
 
+        // Dentro da função que é executada ao carregar a página
+        fetch('/get-expiration-date', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+        if (data.success && data.expirationDate) {
+            document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
+        }
+        });
+
       // Adicionar evento de submit no formulário
       document.getElementById('userForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -399,6 +413,12 @@
         bodyPd.classList.add('body-pd');
       }
     });
+    // Função de logout
+        document.querySelector('.nav_link[href="index.html"]').addEventListener('click', function() {
+        localStorage.clear(); // Limpa todas as informações do usuário armazenadas no localStorage
+        window.location.href = '/index.html'; // Redireciona para a página de login
+        });
+
   </script>
 </body>
 

@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="assets/img/favicon.png" rel="icon">
-  <title>Dashboard ZapLite</title>
+  <title>Renovar Assinatura - ZapLite</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.1/css/boxicons.min.css" rel="stylesheet">
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
+
     :root {
       --header-height: 60px;
       --nav-width: 250px;
@@ -20,20 +22,15 @@
       --normal-font-size: 1rem;
       --z-fixed: 100;
     }
-    *, ::before, ::after {
-      box-sizing: border-box;
-    }
+
     body {
       margin: 0;
       font-family: var(--body-font);
       font-size: var(--normal-font-size);
       background-color: var(--grey-color);
       transition: .5s;
-      display: none; /* Esconde o conteúdo até a verificação */
     }
-    a {
-      text-decoration: none;
-    }
+
     .header {
       width: 100%;
       height: var(--header-height);
@@ -48,11 +45,13 @@
       z-index: var(--z-fixed);
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
     .header_toggle {
       color: var(--first-color);
       font-size: 1.5rem;
       cursor: pointer;
     }
+
     .header_img {
       width: 35px;
       height: 35px;
@@ -61,14 +60,17 @@
       border-radius: 50%;
       overflow: hidden;
     }
+
     .header_img img {
       width: 40px;
     }
+
     .expiration-date {
       margin-left: 10px;
       font-weight: 600;
       color: var(--first-color);
     }
+
     .l-navbar {
       position: fixed;
       top: var(--header-height);
@@ -80,9 +82,11 @@
       transition: left 0.5s ease;
       z-index: var(--z-fixed);
     }
+
     .l-navbar.show {
       left: 0;
     }
+
     .nav {
       height: 100%;
       display: flex;
@@ -90,39 +94,49 @@
       justify-content: space-between;
       overflow: hidden;
     }
-    .nav_logo, .nav_link {
+
+    .nav_logo,
+    .nav_link {
       display: grid;
       grid-template-columns: max-content max-content;
       align-items: center;
       column-gap: 1rem;
       padding: .5rem 0 .5rem 1.5rem;
     }
+
     .nav_logo {
       margin-bottom: 2rem;
     }
+
     .nav_logo-icon {
       font-size: 1.25rem;
       color: var(--white-color);
     }
+
     .nav_logo-name {
       color: var(--white-color);
       font-weight: 700;
     }
+
     .nav_link {
       position: relative;
       color: var(--first-color-light);
       margin-bottom: 1.5rem;
       transition: .3s;
     }
+
     .nav_link:hover {
       color: var(--white-color);
     }
+
     .nav_icon {
       font-size: 1.25rem;
     }
+
     .active {
-      color: var (--white-color);
+      color: var(--white-color);
     }
+
     .active::before {
       content: '';
       position: absolute;
@@ -131,118 +145,122 @@
       height: 32px;
       background-color: var(--white-color);
     }
-    .height-100 {
-      height: 100vh;
-    }
-    #qr-code {
-      width: 100%;
-      height: auto;
-    }
+
     .main-container {
       margin-top: calc(var(--header-height) + 1rem);
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       padding: 1rem;
     }
-    .prompt-container {
-      width: 70%;
-      display: flex;
-      flex-direction: column;
-    }
-    .prompt-container textarea {
+
+    .container {
+      background-color: var(--white-color);
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
       width: 100%;
-      height: 100%;
-      resize: none;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
     }
-    .prompt-container button {
-      align-self: flex-start;
-      margin-top: 10px;
-    }
-    .control-container {
-      width: 28%;
-      padding-left: 2%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .control-container .control-box {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 20px;
+
+    h1 {
+      color: var(--first-color);
+      font-weight: 700;
+      margin-bottom: 1rem;
       text-align: center;
     }
-    .control-container .control-box h5 {
+
+    p {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      border: none;
+      border-radius: 8px;
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+      overflow: hidden;
+      background-color: var(--grey-color);
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-body {
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .card-title {
+      font-weight: 700;
+      color: rgb(129, 39, 39);
       margin-bottom: 1rem;
     }
-    .control-container .control-box button {
-      width: 100%;
-      margin-bottom: 1rem;
+
+    .card-text {
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+      color: #555;
     }
-    .control-container .control-box img {
-      margin: 1rem 0;
-      width: 100%;
+
+    .btn-primary {
+      background-color: var(--first-color);
+      border-color: white;
+      transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--first-color-light);
+      transform: translateY(-3px);
+    }
+
+    .btn-primary:focus,
+    .btn-primary:active {
+      background-color: var(--first-color-light);
+      border-color: var(--first-color-light);
+      box-shadow: none;
+    }
+
+    .btn-primary:focus {
+      outline: none;
+    }
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-container img {
+      max-width: 150px;
       height: auto;
-    }
-    .control-container .control-box #status {
-      font-weight: bold;
-      margin-top: 1rem;
-      display: block;
-    }
-    .body-pd {
-      padding-left: var(--nav-width);
-    }
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-size: 1.5rem;
-      color: var(--first-color);
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .spinner {
-      border: 6px solid var(--grey-color);
-      border-top: 6px solid var(--first-color);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
     }
 
     @media screen and (max-width: 768px) {
       .header_toggle {
         display: block;
       }
-      .body-pd {
-        padding-left: 0;
-      }
+
       .l-navbar {
         left: -100%;
         width: 250px;
       }
+
       .l-navbar.show {
         left: 0;
       }
+
       .main-container {
         flex-direction: column;
       }
-      .prompt-container {
+
+      .container {
         width: 100%;
-      }
-      .control-container {
-        width: 100%;
-        padding-left: 0;
-        margin-top: 1rem;
       }
     }
   </style>
 </head>
+
 <body>
   <!-- Tela de carregamento -->
   <div class="loading" id="loading">
@@ -266,7 +284,7 @@
             <span class="nav_logo-name">ZapLite</span>
           </a>
           <div class="nav_list">
-            <a href="#" class="nav_link active">
+            <a href="dashboard.html" class="nav_link">
               <i class='bx bx-grid-alt nav_icon'></i>
               <span class="nav_name">Dashboard</span>
             </a>
@@ -274,7 +292,7 @@
               <i class='bx bx-user nav_icon'></i>
               <span class="nav_name">Meu Usuário</span>
             </a>
-            <a href="renovarassinatura.html" class="nav_link">
+            <a href="renovarassinatura.html" class="nav_link active">
               <i class='bx bx-bookmark nav_icon'></i>
               <span class="nav_name">Planos</span>
             </a>
@@ -293,23 +311,49 @@
 
     <!-- Container Principal -->
     <div class="main-container">
-      <!-- Área do Prompt -->
-      <div class="prompt-container">
-        <div class="form-group">
-          <label for="prompt">Prompt:</label>
-          <textarea class="form-control" id="prompt" rows="10" placeholder="Descreva o seu negócio aqui..."></textarea>
-          <button id="save-prompt" class="btn btn-primary mt-2">Salvar Prompt</button>
+      <div class="container mt-5">
+        <div class="logo-container">
+          <img src="login_front/images/bg-1.jpg" alt="ZapLite Logo">
         </div>
-      </div>
-
-      <!-- Área de Controle -->
-      <div class="control-container">
-        <div class="control-box">
-          <h5>Bot Control</h5>
-          <button id="start-bot" class="btn btn-success">Iniciar Bot</button>
-          <button id="stop-bot" class="btn btn-danger">Parar Bot</button>
-          <img id="qr-code" src="" alt="QR Code" style="display: none;">
-          <span id="status">Seu BOT está DESLIGADO.</span>
+        <h1>Renovar Assinatura</h1>
+        <p>Olá, <span id="user-name"></span>! Sua assinatura vence em <span id="expiration-date"></span>. Gostaria de renovar?</p>
+        <div class="row">
+          <div class="col-md-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Plano Mensal</h5>
+                <p class="card-text">R$79,90 por mês</p>
+                <button class="btn btn-primary" id="choose-monthly">Escolher</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Plano Trimestral</h5>
+                <p class="card-text">R$197,90 por 3 meses</p>
+                <button class="btn btn-primary" id="choose-quarterly">Escolher</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Plano Semestral</h5>
+                <p class="card-text">R$373,80 por 6 meses</p>
+                <button class="btn btn-primary" id="choose-semiannually">Escolher</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Plano Anual</h5>
+                <p class="card-text">R$670,80 por ano</p>
+                <button class="btn btn-primary" id="choose-annually">Escolher</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -324,7 +368,7 @@
       const userId = localStorage.getItem('userId');
       if (!userId) {
         window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
-        return; // Parar a execução do script
+        return;
       }
 
       // Verificar a assinatura do usuário
@@ -339,36 +383,9 @@
           // Exibir o conteúdo do dashboard
           document.getElementById('loading').style.display = 'none';
           document.getElementById('dashboard-content').style.display = 'block';
-          document.body.style.display = 'block';  // Exibir o body
 
-          // Exibir data de vencimento
-          fetch('/get-expiration-date', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.expirationDate) {
-              document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
-            }
-          });
-
-          // Carregar o prompt do usuário
-          fetch('/get-prompt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.prompt) {
-              document.getElementById('prompt').value = data.prompt;
-            }
-          });
-
-          // Verificar o status do bot
-          fetch('/bot-status', {
+          // Carregar informações do usuário
+          fetch('/get-user-info', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId })
@@ -376,93 +393,64 @@
           .then(response => response.json())
           .then(data => {
             if (data.success) {
-              if (data.status === 'connected') {
-                document.getElementById('status').textContent = 'WhatsApp connected';
-              }
+              document.getElementById('user-name').textContent = data.user.name;
+              document.getElementById('expiration-date').textContent = new Date(data.user.expiration_date).toLocaleDateString();
+            } else {
+              alert('Erro ao carregar informações do usuário');
             }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar informações do usuário:', error);
+            alert('Erro ao carregar informações do usuário');
           });
 
         } else {
           window.location.href = '/index.html'; // Redirecionar para a página de login se a assinatura não estiver ativa
         }
       });
+
+      document.getElementById('choose-monthly').addEventListener('click', function() {
+        choosePlan('monthly');
+      });
+      document.getElementById('choose-quarterly').addEventListener('click', function() {
+        choosePlan('quarterly');
+      });
+      document.getElementById('choose-semiannually').addEventListener('click', function() {
+        choosePlan('semiannually');
+      });
+      document.getElementById('choose-annually').addEventListener('click', function() {
+        choosePlan('annually');
+      });
     });
 
-    // Função de salvamento do prompt
-    const savePromptButton = document.getElementById('save-prompt');
-    savePromptButton.addEventListener('click', () => {
-      const prompt = document.getElementById('prompt').value;
+    function choosePlan(plan) {
       const userId = localStorage.getItem('userId');
-      fetch('/set-prompt', {
+
+      if (!userId) {
+        console.error('User ID not found.');
+        alert('Erro: Usuário não identificado. Faça login novamente.');
+        return;
+      }
+
+      fetch('/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, prompt })
+        body: JSON.stringify({ userId, plan })
       })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert('Prompt salvo com sucesso!');
+          window.location.href = data.paymentLink;
         } else {
-          alert('Falha ao salvar o Prompt');
+          console.error('Erro ao criar sessão de pagamento:', data.message);
+          alert('Erro ao criar sessão de pagamento.');
         }
+      })
+      .catch(error => {
+        console.error('Erro ao escolher plano:', error);
+        alert('Ocorreu um erro ao processar sua solicitação. Tente novamente mais tarde.');
       });
-    });
-
-    // Iniciar e parar bot
-    const startBotButton = document.getElementById('start-bot');
-    const stopBotButton = document.getElementById('stop-bot');
-    const statusElement = document.getElementById('status');
-    const qrCodeImage = document.getElementById('qr-code');
-
-    startBotButton.addEventListener('click', () => {
-      statusElement.textContent = 'Bot started successfully. Waiting for QR Code...';
-      fetch('/start-bot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      }).then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            console.log('Bot started');
-          } else {
-            console.error('Failed to start bot:', data.message);
-            statusElement.textContent = 'Failed to start bot';
-          }
-        });
-    });
-
-    stopBotButton.addEventListener('click', () => {
-      fetch('/stop-bot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      }).then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            qrCodeImage.style.display = 'none';
-            statusElement.textContent = 'Bot stopped successfully';
-            console.log('Bot stopped');
-          } else {
-            console.error('Failed to stop bot:', data.message);
-            statusElement.textContent = 'Failed to stop bot';
-          }
-        });
-    });
-
-    const ws = new WebSocket(`wss://${window.location.host}`);
-
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-
-      if (message.status === 'qr_code') {
-        qrCodeImage.src = message.data;
-        qrCodeImage.style.display = 'block';
-        statusElement.textContent = 'Scan the QR Code with your WhatsApp';
-      } else if (message.status === 'connected') {
-        statusElement.textContent = 'WhatsApp connected';
-        qrCodeImage.style.display = 'none';
-      }
-    };
+    }
 
     // Toggle menu lateral no mobile e desktop
     const toggleButton = document.getElementById('header-toggle');
@@ -494,4 +482,5 @@
 
   </script>
 </body>
+
 </html>
