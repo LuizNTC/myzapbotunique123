@@ -565,18 +565,14 @@ const processQueue = (sessionName) => {
 
 const startBot = async (userId) => {
   const sessionName = `session_${userId}`;
-  
   if (sessions[sessionName]) {
       console.log(`Bot already started for user ${userId}`);
       return;
   }
 
-  // Limpeza da sessão anterior, se existir
   cleanSession(sessionName);
-
   const client = await pool.connect();
   try {
-      // Obtenção do prompt do usuário
       const result = await client.query('SELECT prompt FROM users WHERE id = $1', [userId]);
       if (result.rows.length === 0) {
           throw new Error('No user found with the provided userId');
@@ -585,7 +581,6 @@ const startBot = async (userId) => {
 
       console.log('Starting WhatsApp bot creation process...');
 
-      // Criação da sessão do WhatsApp com o venom-bot
       create(
           sessionName,
           (base64Qr, asciiQR) => {
@@ -602,7 +597,7 @@ const startBot = async (userId) => {
           },
           undefined,
           {
-              headless: false, // Modificado para false para testes
+              headless: true,
               useChrome: true,
               browserArgs: [
                   '--no-sandbox',
@@ -617,7 +612,7 @@ const startBot = async (userId) => {
           }
       ).then((client) => {
           sessions[sessionName] = client;
-          queues[sessionName] = []; // Criação da fila de mensagens para o usuário
+          queues[sessionName] = []; // Criando uma fila de mensagens para o usuário
 
           console.log(`WhatsApp connected successfully for user ${userId}!`);
           if (wss) {
