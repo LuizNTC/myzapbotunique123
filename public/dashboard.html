@@ -254,7 +254,7 @@
   <div id="dashboard-content" style="display: none;">
     <header class="header">
       <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
-      <div class="header_img"> <img src="https://i.imgur.com/hczKIze.jpg" alt=""> </div>
+      <div class="header_img"> <img src="https://i.imgur.com/QfTlM6V.png" alt=""> </div>
       <span class="expiration-date">Expira em: <span id="expiration-date"></span></span>
     </header>
 
@@ -377,7 +377,7 @@
       .then(data => {
         if (data.success) {
           if (data.status === 'connected') {
-            document.getElementById('status').textContent = 'WhatsApp connected';
+            document.getElementById('status').textContent = 'Seu BOT está FUNCIONANDO!';
           }
         }
       });
@@ -413,7 +413,7 @@
   const qrCodeImage = document.getElementById('qr-code');
 
   startBotButton.addEventListener('click', () => {
-    statusElement.textContent = 'Bot started successfully. Waiting for QR Code...';
+    statusElement.textContent = 'Bot Iniciando, aguarde o QR CODE aparecer...';
     fetch('/start-bot', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -438,7 +438,7 @@
       .then(data => {
         if (data.success) {
           qrCodeImage.style.display = 'none';
-          statusElement.textContent = 'Bot stopped successfully';
+          statusElement.textContent = 'Bot Finalizado';
           console.log('Bot stopped');
         } else {
           console.error('Failed to stop bot:', data.message);
