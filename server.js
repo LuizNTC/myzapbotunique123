@@ -727,6 +727,34 @@ app.post('/verify-subscription', async (req, res) => {
   }
 });
 
+app.post('/verificar-login', async (req, res) => {
+  const { email, password } = req.body;
+  const client = await pool.connect();
+  try {
+    // Verificar se o usuário existe com base no email
+    const result = await client.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+
+    // Verificar se o email e a senha estão corretos
+    if (user && await bcrypt.compare(password, user.password)) {
+      // Verificar se a assinatura do usuário está ativa
+      if (user.subscription_status === 'active') {
+        res.status(200).json({ success: true, userId: user.id });
+      } else {
+        res.status(403).json({ success: false, message: 'Assinatura inativa ou expirada.' });
+      }
+    } else {
+      res.status(401).json({ success: false, message: 'Credenciais inválidas.' });
+    }
+  } catch (err) {
+    console.error('Error verifying login:', err);
+    res.status(500).json({ success: false, message: 'Erro ao verificar o login.' });
+  } finally {
+    client.release();
+  }
+});
+
+
 const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
   try {
