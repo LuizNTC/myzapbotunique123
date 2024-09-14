@@ -565,79 +565,97 @@ const processQueue = (sessionName) => {
 
 const startBot = async (userId) => {
   const sessionName = `session_${userId}`;
+  
+  // Se o bot já estiver rodando para esse usuário, não inicializar de novo
   if (sessions[sessionName]) {
-      console.log(`Bot already started for user ${userId}`);
-      return;
+    console.log(`Bot already started for user ${userId}`);
+    return;
   }
 
+  // Limpar sessão anterior (caso exista)
   cleanSession(sessionName);
+
   const client = await pool.connect();
   try {
-      const result = await client.query('SELECT prompt FROM users WHERE id = $1', [userId]);
-      if (result.rows.length === 0) {
-          throw new Error('No user found with the provided userId');
-      }
-      const prompt = result.rows[0].prompt || "Default prompt";
+    // Buscar o prompt configurado pelo usuário no banco de dados
+    const result = await client.query('SELECT prompt FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      throw new Error('No user found with the provided userId');
+    }
+    
+    const prompt = result.rows[0].prompt || "Default prompt";
 
-      console.log('Starting WhatsApp bot creation process...');
+    console.log('Starting WhatsApp bot creation process...');
 
-      create(
-          sessionName,
-          (base64Qr, asciiQR) => {
-              console.log('QR Code generated, scan with your WhatsApp:');
-              console.log(asciiQR);
-              if (wss) {
-                  wss.clients.forEach((client) => {
-                      if (client.readyState === WebSocket.OPEN) {
-                          client.send(JSON.stringify({ status: 'qr_code', data: base64Qr }));
-                          console.log('Sent QR Code to client');
-                      }
-                  });
-              }
-          },
-          undefined,
-          {
-              headless: true,
-              useChrome: true,
-              browserArgs: [
-                  '--no-sandbox',
-                  '--disable-setuid-sandbox',
-                  '--disable-dev-shm-usage',
-                  '--disable-accelerated-2d-canvas',
-                  '--no-first-run',
-                  '--no-zygote',
-                  '--single-process',
-                  '--disable-gpu'
-              ]
-          }
-      ).then((client) => {
-          sessions[sessionName] = client;
-          queues[sessionName] = []; // Criando uma fila de mensagens para o usuário
+    // Criar o bot do WhatsApp com Venom
+    create(
+      sessionName,
+      (base64Qr, asciiQR) => {
+        // QR Code gerado, enviar via WebSocket para o cliente
+        console.log('QR Code generated, scan with your WhatsApp:');
+        console.log(asciiQR); // Exibe o QR Code no console em formato ASCII
 
-          console.log(`WhatsApp connected successfully for user ${userId}!`);
-          if (wss) {
-              wss.clients.forEach((client) => {
-                  if (client.readyState === WebSocket.OPEN) {
-                      client.send(JSON.stringify({ status: 'connected' }));
-                      console.log('Sent connected status to client');
-                  }
-              });
-          }
-
-          client.onMessage((message) => {
-              console.log('Message received:', message.body);
-              queues[sessionName].push({ client, message, prompt });
-              processQueue(sessionName); // Processando a fila de mensagens para o usuário
+        // Enviar o QR Code via WebSocket para o frontend ou para o cliente Python
+        if (wss) {
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify({ status: 'qr_code', data: base64Qr }));
+              console.log('Sent QR Code to client');
+            }
           });
-      }).catch((err) => {
-          console.error('Error connecting to WhatsApp:', err.message);
+        }
+      },
+      undefined,
+      {
+        headless: true,  // Pode ser `false` para depuração se precisar ver o processo visualmente
+        useChrome: true,
+        browserArgs: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu'
+        ]
+      }
+    ).then((client) => {
+      // Armazenar a sessão do cliente para gerenciamento
+      sessions[sessionName] = client;
+      queues[sessionName] = []; // Criando uma fila de mensagens para o usuário
+
+      console.log(`WhatsApp connected successfully for user ${userId}!`);
+
+      // Enviar status de conexão via WebSocket para o cliente
+      if (wss) {
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ status: 'connected' }));
+            console.log('Sent connected status to client');
+          }
+        });
+      }
+
+      // Escutar mensagens recebidas no WhatsApp e processá-las
+      client.onMessage((message) => {
+        console.log('Message received:', message.body);
+
+        // Adicionar mensagem à fila para processamento
+        queues[sessionName].push({ client, message, prompt });
+        processQueue(sessionName); // Processar a fila de mensagens
       });
+    }).catch((err) => {
+      console.error('Error connecting to WhatsApp:', err.message);
+    });
   } catch (err) {
-      console.error('Error getting prompt:', err);
+    console.error('Error getting prompt:', err);
   } finally {
-      client.release();
+    client.release(); // Garantir que o client do pool seja liberado
   }
 };
+
+
 
 
 
