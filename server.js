@@ -754,6 +754,25 @@ app.post('/verificar-login', async (req, res) => {
   }
 });
 
+app.post('/test-bcrypt', async (req, res) => {
+  const { email, password } = req.body;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT password FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+    if (user) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      res.json({ success: isMatch });
+    } else {
+      res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Erro ao testar bcrypt' });
+  } finally {
+    client.release();
+  }
+});
+
 
 const handlePaymentSuccess = async (userId) => {
   const client = await pool.connect();
