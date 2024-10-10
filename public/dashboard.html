@@ -29,7 +29,7 @@
       font-size: var(--normal-font-size);
       background-color: var(--grey-color);
       transition: .5s;
-      display: none; /* Esconde o conteúdo até a verificação */
+      display: none;
     }
     a {
       text-decoration: none;
@@ -121,7 +121,7 @@
       font-size: 1.25rem;
     }
     .active {
-      color: var (--white-color);
+      color: var(--white-color);
     }
     .active::before {
       content: '';
@@ -134,39 +134,35 @@
     .height-100 {
       height: 100vh;
     }
-    #qr-code {
-      width: 100%;
-      height: auto;
-    }
     .main-container {
       margin-top: calc(var(--header-height) + 1rem);
+      padding: 1rem;
+      display: block;
+    }
+    .welcome-message {
+      margin-bottom: 2rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .row {
       display: flex;
       justify-content: space-between;
-      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+    .prompt-container, .control-container {
+      flex: 1;
+      padding: 0 1rem;
     }
     .prompt-container {
-      width: 70%;
-      display: flex;
-      flex-direction: column;
+      margin-right: 1rem;
     }
     .prompt-container textarea {
       width: 100%;
-      height: 100%;
+      height: 300px;
       resize: none;
       padding: 1rem;
       border: 1px solid #ccc;
       border-radius: 8px;
-    }
-    .prompt-container button {
-      align-self: flex-start;
-      margin-top: 10px;
-    }
-    .control-container {
-      width: 28%;
-      padding-left: 2%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
     .control-container .control-box {
       border: 1px solid #ccc;
@@ -174,70 +170,24 @@
       padding: 20px;
       text-align: center;
     }
-    .control-container .control-box h5 {
-      margin-bottom: 1rem;
-    }
     .control-container .control-box button {
       width: 100%;
       margin-bottom: 1rem;
     }
     .control-container .control-box img {
-      margin: 1rem 0;
-      width: 100%;
-      height: auto;
+      width: 50px;
+      margin: 10px;
     }
-    .control-container .control-box #status {
-      font-weight: bold;
-      margin-top: 1rem;
+    .tips-container {
+      margin-top: 2rem;
       display: block;
     }
-    .body-pd {
-      padding-left: var(--nav-width);
-    }
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-size: 1.5rem;
-      color: var(--first-color);
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .spinner {
-      border: 6px solid var(--grey-color);
-      border-top: 6px solid var(--first-color);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
+    .tips-container p {
+      margin-top: 1rem;
     }
     @media screen and (max-width: 768px) {
-      .header_toggle {
-        display: block;
-      }
-      .body-pd {
-        padding-left: 0;
-      }
-      .l-navbar {
-        left: -100%;
-        width: 250px;
-      }
-      .l-navbar.show {
-        left: 0;
-      }
-      .main-container {
+      .row {
         flex-direction: column;
-      }
-      .prompt-container {
-        width: 100%;
-      }
-      .control-container {
-        width: 100%;
-        padding-left: 0;
-        margin-top: 1rem;
       }
     }
   </style>
@@ -294,33 +244,34 @@
     <div class="main-container">
       <!-- Título de Boas-Vindas -->
       <div class="welcome-message">
-        <h2>Boas-vindas, <span id="user-name"></span>!</h2>
+        Boas-vindas, <span id="user-name"></span>!
       </div>
 
-      <!-- Área do Prompt -->
-      <div class="prompt-container">
-        <div class="form-group">
-          <label for="prompt">Prompt:</label>
-          <textarea class="form-control" id="prompt" rows="10" placeholder="Descreva o seu negócio aqui..."></textarea>
+      <!-- Prompt e Download lado a lado -->
+      <div class="row">
+        <div class="prompt-container">
+          <div class="form-group">
+            <label for="prompt">Prompt:</label>
+            <textarea class="form-control" id="prompt" placeholder="Descreva o seu negócio aqui..."></textarea>
+          </div>
           <button id="save-prompt" class="btn btn-primary mt-2">Salvar Prompt</button>
         </div>
-      </div>
 
-      <!-- Área de Download do Software -->
-      <div class="control-container">
-        <div class="control-box">
-          <h5>Download Software</h5>
-          <p>Baixe o instalador oficial do software da ZapLite em seu computador.</p>
-          <button id="download-software" class="btn btn-success">Download</button>
-          <img src="assets/img/apple-touch-icon.png" alt="Logo ZapLite" style="width: 50px; margin-top: 10px;">
-          <img src="https://icones.pro/wp-content/uploads/2021/06/logo-windows-gris.png" alt="Logo Google Chrome" style="width: 50px; margin-top: 10px;">
+        <div class="control-container">
+          <div class="control-box">
+            <h5>Download Software</h5>
+            <p>Baixe o instalador oficial do software da ZapLite em seu computador.</p>
+            <button id="download-software" class="btn btn-success">Download</button>
+            <img src="assets/img/zaplite-logo.png" alt="Logo ZapLite">
+            <img src="assets/img/chrome-logo.png" alt="Logo Google Chrome">
+          </div>
         </div>
       </div>
 
       <!-- Dicas de Prompt -->
-      <div class="tips-container mt-5">
-        <h5>Dicas de Prompt</h5>
-        <p>Para preencher o prompt de forma eficiente, descreva seu negócio de maneira clara e objetiva, logo após inclua os principais serviços ou produtos que oferece, e como você deseja que a inteligencia artifical deve fazer o atendimento aos seus clientes.</p>
+      <div class="tips-container">
+        <h4>Dicas de Prompt</h4>
+        <p>Para preencher o prompt de forma eficiente, descreva seu negócio de maneira clara e objetiva. Inclua os principais serviços ou produtos que oferece, além de informações que podem ajudar a IA a entender melhor o contexto do seu atendimento.</p>
       </div>
     </div>
   </div>
@@ -333,11 +284,10 @@
     document.addEventListener("DOMContentLoaded", function(event) {
       const userId = localStorage.getItem('userId');
       if (!userId) {
-        window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
-        return; // Parar a execução do script
+        window.location.href = '/index.html';
+        return;
       }
 
-      // Verificar a assinatura do usuário e carregar as informações iniciais
       fetch('/verify-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -346,12 +296,10 @@
       .then(response => response.json())
       .then(data => {
         if (data.success && data.active) {
-          // Exibir o conteúdo do dashboard
           document.getElementById('loading').style.display = 'none';
           document.getElementById('dashboard-content').style.display = 'block';
-          document.body.style.display = 'block';  // Exibir o body
+          document.body.style.display = 'block';
 
-          // Exibir data de vencimento
           fetch('/get-expiration-date', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -364,10 +312,8 @@
             }
           });
 
-          // Exibir nome do usuário
           document.getElementById('user-name').textContent = data.name;
 
-          // Carregar o prompt do usuário
           fetch('/get-prompt', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -381,11 +327,10 @@
           });
 
         } else {
-          window.location.href = '/index.html'; // Redirecionar para a página de login se a assinatura não estiver ativa
+          window.location.href = '/index.html';
         }
       });
 
-      // Função de salvamento do prompt
       const savePromptButton = document.getElementById('save-prompt');
       savePromptButton.addEventListener('click', () => {
         const prompt = document.getElementById('prompt').value;
@@ -404,7 +349,6 @@
         });
       });
 
-      // Toggle menu lateral no mobile e desktop
       const toggleButton = document.getElementById('header-toggle');
       const navBar = document.getElementById('nav-bar');
       const bodyPd = document.body;
@@ -425,8 +369,8 @@
       }
 
       document.querySelector('.nav_link[href="index.html"]').addEventListener('click', function() {
-        localStorage.clear(); // Limpa todas as informações do usuário armazenadas no localStorage
-        window.location.href = '/index.html'; // Redireciona para a página de login
+        localStorage.clear();
+        window.location.href = '/index.html';
       });
     });
   </script>

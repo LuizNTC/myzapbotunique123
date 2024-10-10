@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="assets/img/favicon.png" rel="icon">
-  <title>Dashboard ZapLite</title>
+  <title>Meu Usuário - ZapLite</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.1/css/boxicons.min.css" rel="stylesheet">
   <style>
+    /* Estilos copiados do dashboard para manter a consistência visual */
     @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap");
+
     :root {
       --header-height: 60px;
       --nav-width: 250px;
@@ -20,20 +23,15 @@
       --normal-font-size: 1rem;
       --z-fixed: 100;
     }
-    *, ::before, ::after {
-      box-sizing: border-box;
-    }
+
     body {
       margin: 0;
       font-family: var(--body-font);
       font-size: var(--normal-font-size);
       background-color: var(--grey-color);
       transition: .5s;
-      display: none;
     }
-    a {
-      text-decoration: none;
-    }
+
     .header {
       width: 100%;
       height: var(--header-height);
@@ -48,11 +46,13 @@
       z-index: var(--z-fixed);
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
     .header_toggle {
       color: var(--first-color);
       font-size: 1.5rem;
       cursor: pointer;
     }
+
     .header_img {
       width: 35px;
       height: 35px;
@@ -61,14 +61,17 @@
       border-radius: 50%;
       overflow: hidden;
     }
+
     .header_img img {
       width: 40px;
     }
+
     .expiration-date {
       margin-left: 10px;
       font-weight: 600;
       color: var(--first-color);
     }
+
     .l-navbar {
       position: fixed;
       top: var(--header-height);
@@ -80,9 +83,11 @@
       transition: left 0.5s ease;
       z-index: var(--z-fixed);
     }
+
     .l-navbar.show {
       left: 0;
     }
+
     .nav {
       height: 100%;
       display: flex;
@@ -90,39 +95,49 @@
       justify-content: space-between;
       overflow: hidden;
     }
-    .nav_logo, .nav_link {
+
+    .nav_logo,
+    .nav_link {
       display: grid;
       grid-template-columns: max-content max-content;
       align-items: center;
       column-gap: 1rem;
       padding: .5rem 0 .5rem 1.5rem;
     }
+
     .nav_logo {
       margin-bottom: 2rem;
     }
+
     .nav_logo-icon {
       font-size: 1.25rem;
       color: var(--white-color);
     }
+
     .nav_logo-name {
       color: var(--white-color);
       font-weight: 700;
     }
+
     .nav_link {
       position: relative;
       color: var(--first-color-light);
       margin-bottom: 1.5rem;
       transition: .3s;
     }
+
     .nav_link:hover {
-      color: var (--white-color);
+      color: var(--white-color);
     }
+
     .nav_icon {
       font-size: 1.25rem;
     }
+
     .active {
       color: var(--white-color);
     }
+
     .active::before {
       content: '';
       position: absolute;
@@ -131,62 +146,64 @@
       height: 32px;
       background-color: var(--white-color);
     }
+
     .height-100 {
       height: 100vh;
     }
+
     .main-container {
       margin-top: calc(var(--header-height) + 1rem);
-      padding: 1rem;
-    }
-    .welcome-message {
-      margin-bottom: 2rem;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    .row {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 2rem;
-    }
-    .prompt-container, .control-container {
-      flex: 1;
-      padding: 0 1rem;
-    }
-    .prompt-container {
-      margin-right: 1rem;
-    }
-    .prompt-container textarea {
-      width: 100%;
-      height: 300px;
-      resize: none;
+      justify-content: center;
       padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
     }
-    .control-container .control-box {
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 20px;
-      text-align: center;
-    }
-    .control-container .control-box button {
+
+    .profile-container {
       width: 100%;
-      margin-bottom: 1rem;
+      max-width: 600px;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    .control-container .control-box img {
-      width: 50px;
-      margin: 10px;
+
+    .profile-container h2 {
+      margin-bottom: 1.5rem;
     }
-    .tips-container {
-      margin-top: 2rem;
+
+    .btn {
+      width: 100%;
     }
+
     @media screen and (max-width: 768px) {
-      .row {
+      .header_toggle {
+        display: block;
+      }
+
+      .body-pd {
+        padding-left: 0;
+      }
+
+      .l-navbar {
+        left: -100%;
+        width: 250px;
+      }
+
+      .l-navbar.show {
+        left: 0;
+      }
+
+      .main-container {
         flex-direction: column;
+      }
+
+      .profile-container {
+        width: 100%;
       }
     }
   </style>
 </head>
+
 <body>
   <!-- Tela de carregamento -->
   <div class="loading" id="loading">
@@ -194,7 +211,7 @@
     <span style="margin-left: 10px;">Aguarde...</span>
   </div>
 
-  <!-- Conteúdo do dashboard -->
+  <!-- Conteúdo do dashboard, inicialmente oculto -->
   <div id="dashboard-content" style="display: none;">
     <header class="header">
       <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
@@ -210,11 +227,11 @@
             <span class="nav_logo-name">ZapLite</span>
           </a>
           <div class="nav_list">
-            <a href="#" class="nav_link active">
+            <a href="dashboard.html" class="nav_link">
               <i class='bx bx-grid-alt nav_icon'></i>
               <span class="nav_name">Dashboard</span>
             </a>
-            <a href="user-profile.html" class="nav_link">
+            <a href="user-profile.html" class="nav_link active">
               <i class='bx bx-user nav_icon'></i>
               <span class="nav_name">Meu Usuário</span>
             </a>
@@ -237,36 +254,37 @@
 
     <!-- Container Principal -->
     <div class="main-container">
-      <!-- Título de Boas-Vindas -->
-      <div class="welcome-message">
-        Boas-vindas, <span id="user-name"></span>!
-      </div>
-
-      <!-- Prompt e Download lado a lado -->
-      <div class="row">
-        <div class="prompt-container">
+      <!-- Área de Perfil do Usuário -->
+      <div class="profile-container">
+        <h2>Informações do Usuário</h2>
+        <form id="userForm">
           <div class="form-group">
-            <label for="prompt">Prompt:</label>
-            <textarea class="form-control" id="prompt" placeholder="Descreva o seu negócio aqui..."></textarea>
+            <label for="name">Nome:</label>
+            <input type="text" class="form-control" id="name" disabled>
           </div>
-          <button id="save-prompt" class="btn btn-primary mt-2">Salvar Prompt</button>
-        </div>
-
-        <div class="control-container">
-          <div class="control-box">
-            <h5>Download Software</h5>
-            <p>Baixe o instalador oficial do software da ZapLite em seu computador.</p>
-            <button id="download-software" class="btn btn-success">Download</button>
-            <img src="assets/img/zaplite-logo.png" alt="Logo ZapLite">
-            <img src="assets/img/chrome-logo.png" alt="Logo Google Chrome">
+          <div class="form-group">
+            <label for="username">Nome do Negócio:</label>
+            <input type="text" class="form-control" id="username" required>
           </div>
-        </div>
-      </div>
-
-      <!-- Dicas de Prompt -->
-      <div class="tips-container">
-        <h4>Dicas de Prompt</h4>
-        <p>Para preencher o prompt de forma eficiente, descreva seu negócio de maneira clara e objetiva. Inclua os principais serviços ou produtos que oferece, além de informações que podem ajudar a IA a entender melhor o contexto do seu atendimento.</p>
+          <div class="form-group">
+            <label for="phone">Telefone:</label>
+            <input type="text" class="form-control" id="phone" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" class="form-control" id="email" required>
+          </div>
+          <div class="form-group">
+            <label for="newPassword">Nova Senha:</label>
+            <input type="password" class="form-control" id="newPassword">
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Confirme a Nova Senha:</label>
+            <input type="password" class="form-control" id="confirmPassword">
+          </div>
+          <button type="submit" class="btn btn-primary">Atualizar</button>
+        </form>
+        <div id="updateResult" class="mt-3"></div>
       </div>
     </div>
   </div>
@@ -276,74 +294,104 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function(event) {
+    document.addEventListener("DOMContentLoaded", async () => {
       const userId = localStorage.getItem('userId');
       if (!userId) {
-        window.location.href = '/index.html';
+        window.location.href = '/index.html'; // Redirecionar para a página de login se o userId não estiver presente
         return;
       }
 
+      // Verificar a assinatura do usuário
       fetch('/verify-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success && data.active) {
-          document.getElementById('loading').style.display = 'none';
-          document.getElementById('dashboard-content').style.display = 'block';
-          document.body.style.display = 'block';
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.active) {
+            // Exibir o conteúdo do dashboard
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard-content').style.display = 'block';
 
-          fetch('/get-expiration-date', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.expirationDate) {
-              document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
-            }
-          });
+            // Carregar informações do usuário
+            fetch('/get-user-info', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId })
+            })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  document.getElementById('name').value = data.user.name;
+                  document.getElementById('username').value = data.user.username;
+                  document.getElementById('phone').value = data.user.phone;
+                  document.getElementById('email').value = data.user.email;
+                } else {
+                  alert('Erro ao carregar informações do usuário');
+                }
+              })
+              .catch(error => {
+                console.error('Erro ao carregar informações do usuário:', error);
+                alert('Erro ao carregar informações do usuário');
+              });
+          } else {
+            window.location.href = '/index.html'; // Redirecionar para a página de login se a assinatura não estiver ativa
+          }
+        });
 
-          document.getElementById('user-name').textContent = data.name;
-
-          fetch('/get-prompt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.prompt) {
-              document.getElementById('prompt').value = data.prompt;
-            }
-          });
-
-        } else {
-          window.location.href = '/index.html';
-        }
-      });
-
-      const savePromptButton = document.getElementById('save-prompt');
-      savePromptButton.addEventListener('click', () => {
-        const prompt = document.getElementById('prompt').value;
-        fetch('/set-prompt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, prompt })
+        // Dentro da função que é executada ao carregar a página
+        fetch('/get-expiration-date', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
         })
         .then(response => response.json())
         .then(data => {
-          if (data.success) {
-            alert('Prompt salvo com sucesso!');
-          } else {
-            alert('Falha ao salvar o Prompt');
-          }
+        if (data.success && data.expirationDate) {
+            document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
+        }
         });
+
+      // Adicionar evento de submit no formulário
+      document.getElementById('userForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const phone = document.getElementById('phone').value;
+        const email = document.getElementById('email').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword && newPassword !== confirmPassword) {
+          alert('As senhas não coincidem!');
+          return;
+        }
+
+        try {
+          const response = await fetch('/update-user-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, username, phone, email, newPassword })
+          });
+
+          const result = await response.json();
+          const updateResult = document.getElementById('updateResult');
+
+          if (result.success) {
+            updateResult.textContent = 'Informações atualizadas com sucesso!';
+            updateResult.className = 'alert alert-success';
+          } else {
+            updateResult.textContent = result.message || 'Erro ao atualizar informações!';
+            updateResult.className = 'alert alert-danger';
+          }
+        } catch (error) {
+          console.error('Erro ao atualizar informações do usuário:', error);
+          alert('Erro ao atualizar informações do usuário');
+        }
       });
 
+      // Toggle menu lateral no mobile e desktop
       const toggleButton = document.getElementById('header-toggle');
       const navBar = document.getElementById('nav-bar');
       const bodyPd = document.body;
@@ -353,21 +401,25 @@
         toggleButton.classList.toggle('bx-x');
         toggleButton.classList.toggle('bx-menu');
 
+        // Adicionar ou remover a classe body-pd no desktop
         if (window.innerWidth > 768) {
           bodyPd.classList.toggle('body-pd');
         }
       });
 
+      // Abrir o menu por padrão no desktop e ajustar o conteúdo
       if (window.innerWidth > 768) {
         navBar.classList.add('show');
         bodyPd.classList.add('body-pd');
       }
-
-      document.querySelector('.nav_link[href="index.html"]').addEventListener('click', function() {
-        localStorage.clear();
-        window.location.href = '/index.html';
-      });
     });
+    // Função de logout
+        document.querySelector('.nav_link[href="index.html"]').addEventListener('click', function() {
+        localStorage.clear(); // Limpa todas as informações do usuário armazenadas no localStorage
+        window.location.href = '/index.html'; // Redireciona para a página de login
+        });
+
   </script>
 </body>
+
 </html>
