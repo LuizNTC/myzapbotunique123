@@ -312,15 +312,15 @@
           <h5>Download Software</h5>
           <p>Baixe o instalador oficial do software da ZapLite em seu computador.</p>
           <button id="download-software" class="btn btn-success">Download</button>
-          <img src="assets/img/zaplite-logo.png" alt="Logo ZapLite" style="width: 50px; margin-top: 10px;">
-          <img src="assets/img/chrome-logo.png" alt="Logo Google Chrome" style="width: 50px; margin-top: 10px;">
+          <img src="assets/img/apple-touch-icon.png" alt="Logo ZapLite" style="width: 50px; margin-top: 10px;">
+          <img src="https://icones.pro/wp-content/uploads/2021/06/logo-windows-gris.png" alt="Logo Google Chrome" style="width: 50px; margin-top: 10px;">
         </div>
       </div>
 
       <!-- Dicas de Prompt -->
       <div class="tips-container mt-5">
-        <h4>Dicas de Prompt</h4>
-        <p>Para preencher o prompt de forma eficiente, descreva seu negócio de maneira clara e objetiva. Inclua os principais serviços ou produtos que oferece, além de informações que podem ajudar a IA a entender melhor o contexto do seu atendimento.</p>
+        <h5>Dicas de Prompt</h5>
+        <p>Para preencher o prompt de forma eficiente, descreva seu negócio de maneira clara e objetiva, logo após inclua os principais serviços ou produtos que oferece, e como você deseja que a inteligencia artifical deve fazer o atendimento aos seus clientes.</p>
       </div>
     </div>
   </div>
@@ -425,8 +425,8 @@
       }
 
       document.querySelector('.nav_link[href="index.html"]').addEventListener('click', function() {
-        localStorage.clear();
-        window.location.href = '/index.html';
+        localStorage.clear(); // Limpa todas as informações do usuário armazenadas no localStorage
+        window.location.href = '/index.html'; // Redireciona para a página de login
       });
     });
   </script>
