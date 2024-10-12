@@ -76,31 +76,33 @@
     <!-- Script de Login -->
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+          e.preventDefault();
+          
+          const email = document.getElementById('loginEmail').value;
+          const password = document.getElementById('loginPassword').value;
+          
+          try {
             const response = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
             });
+      
             const result = await response.json();
-            const loginResult = document.getElementById('loginResult');
+      
             if (result.success) {
-                localStorage.setItem('userId', result.userId); // Salvando userId no localStorage
-                if (result.pending) {
-                    window.location.href = 'plans.html'; // Redireciona para a página de planos
-                } else if (result.expired) {
-                    window.location.href = 'renew.html'; // Redireciona para a página de renovação
-                } else {
-                    loginResult.textContent = 'Login successful!';
-                    window.location.href = 'dashboard.html'; // Redireciona para o dashboard
-                }
+              localStorage.setItem('userId', result.userId);
+              window.location.href = 'dashboard.html'; // Redireciona para o dashboard
             } else {
-                loginResult.textContent = result.message || 'ERRO AO LOGAR, VERIFIQUE SEUS DADOS DE ACESSO!';
+              alert(result.message || 'Login falhou!');
             }
+          } catch (error) {
+            console.error('Erro durante o login:', error);
+            alert('Erro de conexão com o servidor.');
+          }
         });
-    </script>
+      </script>
+      
 
 
     

@@ -29,7 +29,6 @@
       font-size: var(--normal-font-size);
       background-color: var(--grey-color);
       transition: .5s;
-      display: none;
     }
     a {
       text-decoration: none;
@@ -64,6 +63,9 @@
     .header_img img {
       width: 40px;
     }
+    #save-prompt {
+      margin-top: 10px;
+    }
     .expiration-date {
       margin-left: 10px;
       font-weight: 600;
@@ -77,8 +79,8 @@
       height: calc(100vh - var(--header-height));
       background-color: var(--first-color);
       padding: .5rem 1rem 0 0;
-      transition: left 0.5s ease;
       z-index: var(--z-fixed);
+      transition: 0.5s ease;
     }
     .l-navbar.show {
       left: 0;
@@ -115,163 +117,209 @@
       transition: .3s;
     }
     .nav_link:hover {
-      color: var (--white-color);
+      color: var(--white-color);
     }
     .nav_icon {
       font-size: 1.25rem;
     }
     .active {
-      color: var(--white-color);
-    }
-    .active::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      width: 2px;
-      height: 32px;
-      background-color: var(--white-color);
+      color: var (--white-color);
     }
     .height-100 {
       height: 100vh;
     }
+    #qr-code {
+      width: 100%;
+      height: auto;
+    }
     .main-container {
       margin-top: calc(var(--header-height) + 1rem);
       padding: 1rem;
-      display: block;
+      display: flex;
+      flex-direction: column;
     }
-    .welcome-message {
-      margin-bottom: 2rem;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    .row {
+    .prompt-container {
       display: flex;
       justify-content: space-between;
       margin-bottom: 2rem;
     }
-    .prompt-container, .control-container {
-      flex: 1;
-      padding: 0 1rem;
+    .prompt-container .form-group {
+      width: 70%;
     }
-    .prompt-container {
-      margin-right: 1rem;
+    .control-container {
+      width: 28%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding-top: 30px;
     }
-    .prompt-container textarea {
-      width: 100%;
-      height: 300px;
-      resize: none;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    .control-container .control-box {
+    .control-box {
       border: 1px solid #ccc;
       border-radius: 8px;
       padding: 20px;
       text-align: center;
     }
-    .control-container .control-box button {
-      width: 100%;
+    .control-box h5 {
       margin-bottom: 1rem;
     }
-    .control-container .control-box img {
+    .control-box img {
+      margin: 1rem 0;
       width: 50px;
-      margin: 10px;
+      height: auto;
+    }
+    .body-pd {
+      padding-left: var(--nav-width);
     }
     .tips-container {
       margin-top: 2rem;
-      display: block;
     }
-    .tips-container p {
-      margin-top: 1rem;
+    .tutorial-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+    }
+    .downloadsoftwaretext{
+      font-weight: bold;
+    }
+    .tutorial-box {
+      width: 23%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      
+      background-color: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    .tutorial-box:hover {
+      transform: translateY(-5px);
+      color: white;
+      background-color: #F26764;
+    }
+    .tutorial-box h4 {
+      margin-bottom: 1rem;
     }
     @media screen and (max-width: 768px) {
-      .row {
+      .header_toggle {
+        display: block;
+      }
+      .body-pd {
+        padding-left: 0;
+      }
+      .l-navbar {
+        left: -100%;
+        width: 250px;
+      }
+      .l-navbar.show {
+        left: 0;
+      }
+      .main-container {
         flex-direction: column;
+      }
+      .prompt-container {
+        flex-direction: column;
+      }
+      .prompt-container .form-group, .control-container {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+      .tutorial-container {
+        flex-direction: column;
+      }
+      .tutorial-box {
+        width: 100%;
+        margin-bottom: 1rem;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Tela de carregamento -->
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <span style="margin-left: 10px;">Aguarde...</span>
+  <header class="header">
+    <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
+    <div class="header_img"> <img src="https://i.imgur.com/QfTlM6V.png" alt=""> </div>
+    <span class="expiration-date">Expira em: <span id="expiration-date">08/02/2024</span></span>
+  </header>
+
+  <div class="l-navbar" id="nav-bar">
+    <nav class="nav">
+      <div>
+        <a href="dashboard.html" class="nav_logo">
+          <i class='bx bx-layer nav_logo-icon'></i>
+          <span class="nav_logo-name">ZapLite</span>
+        </a>
+        <div class="nav_list">
+          <a href="#" class="nav_link active">
+            <i class='bx bx-grid-alt nav_icon'></i>
+            <span class="nav_name">Dashboard</span>
+          </a>
+          <a href="user-profile.html" class="nav_link">
+            <i class='bx bx-user nav_icon'></i>
+            <span class="nav_name">Meu Usuário</span>
+          </a>
+          <a href="renovarassinatura.html" class="nav_link">
+            <i class='bx bx-bookmark nav_icon'></i>
+            <span class="nav_name">Planos</span>
+          </a>
+          <a href="#" class="nav_link">
+            <i class='bx bx-folder nav_icon'></i>
+            <span class="nav_name">Tutoriais</span>
+          </a>
+        </div>
+      </div>
+      <a href="index.html" class="nav_link">
+        <i class='bx bx-log-out nav_icon'></i>
+        <span class="nav_name">Deslogar</span>
+      </a>
+    </nav>
   </div>
 
-  <!-- Conteúdo do dashboard -->
-  <div id="dashboard-content" style="display: none;">
-    <header class="header">
-      <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
-      <div class="header_img"> <img src="https://i.imgur.com/QfTlM6V.png" alt=""> </div>
-      <span class="expiration-date">Expira em: <span id="expiration-date"></span></span>
-    </header>
-
-    <div class="l-navbar" id="nav-bar">
-      <nav class="nav">
-        <div>
-          <a href="dashboard.html" class="nav_logo">
-            <i class='bx bx-layer nav_logo-icon'></i>
-            <span class="nav_logo-name">ZapLite</span>
-          </a>
-          <div class="nav_list">
-            <a href="#" class="nav_link active">
-              <i class='bx bx-grid-alt nav_icon'></i>
-              <span class="nav_name">Dashboard</span>
-            </a>
-            <a href="user-profile.html" class="nav_link">
-              <i class='bx bx-user nav_icon'></i>
-              <span class="nav_name">Meu Usuário</span>
-            </a>
-            <a href="renovarassinatura.html" class="nav_link">
-              <i class='bx bx-bookmark nav_icon'></i>
-              <span class="nav_name">Planos</span>
-            </a>
-            <a href="#" class="nav_link">
-              <i class='bx bx-folder nav_icon'></i>
-              <span class="nav_name">Tutoriais</span>
-            </a>
-          </div>
-        </div>
-        <a href="index.html" class="nav_link">
-          <i class='bx bx-log-out nav_icon'></i>
-          <span class="nav_name">Deslogar</span>
-        </a>
-      </nav>
+  <div class="main-container">
+    <div class="welcome-message">
+      <h2>Boas-vindas, Usuário!</h2>
     </div>
 
-    <!-- Container Principal -->
-    <div class="main-container">
-      <!-- Título de Boas-Vindas -->
-      <div class="welcome-message">
-        Boas-vindas, <span id="user-name"></span>!
+    <div class="prompt-container">
+      <div class="form-group">
+        <label for="prompt">Prompt:</label>
+        <textarea class="form-control" id="prompt" rows="10" placeholder="Descreva o seu negócio aqui..."></textarea>
+        <button id="save-prompt" class="btn btn-success" i class='bx bxs-download'>Salvar Prompt</button>
       </div>
 
-      <!-- Prompt e Download lado a lado -->
-      <div class="row">
-        <div class="prompt-container">
-          <div class="form-group">
-            <label for="prompt">Prompt:</label>
-            <textarea class="form-control" id="prompt" placeholder="Descreva o seu negócio aqui..."></textarea>
-          </div>
-          <button id="save-prompt" class="btn btn-primary mt-2">Salvar Prompt</button>
-        </div>
-
-        <div class="control-container">
-          <div class="control-box">
-            <h5>Download Software</h5>
-            <p>Baixe o instalador oficial do software da ZapLite em seu computador.</p>
-            <button id="download-software" class="btn btn-success">Download</button>
-            <img src="assets/img/zaplite-logo.png" alt="Logo ZapLite">
-            <img src="assets/img/chrome-logo.png" alt="Logo Google Chrome">
-          </div>
+      <div class="control-container">
+        <div class="control-box">
+          <h5 class="downloadsoftwaretext">Download Software</h5>
+          <p>Baixe o instalador oficial do software da ZapLite em seu computador.</p>
+          <button class="btn btn-success"> <i class='bx bxs-download'></i> Download ZapLite </button>
+          <br>
+          <img src="https://i.imgur.com/QYPBpbf.png" alt="Logo ZapLite">
+          <img src="https://icones.pro/wp-content/uploads/2021/06/logo-windows-gris.png" alt="Logo Google Chrome">
         </div>
       </div>
+    </div>
 
-      <!-- Dicas de Prompt -->
-      <div class="tips-container">
-        <h4>Dicas de Prompt</h4>
-        <p>Para preencher o prompt de forma eficiente, descreva seu negócio de maneira clara e objetiva. Inclua os principais serviços ou produtos que oferece, além de informações que podem ajudar a IA a entender melhor o contexto do seu atendimento.</p>
+    <div class="tips-container">
+      <h4>Dicas de Prompt</h4>
+      <p>Para preencher o prompt de forma eficiente, descreva seu negócio de maneira clara e objetiva. Inclua os principais serviços ou produtos que oferece e como você deseja que a inteligência artificial atenda seus clientes.</p>
+    </div>
+
+    <!-- Quadrados Explicativos -->
+    <div class="tutorial-container">
+      <div class="tutorial-box">
+        <h4>1º - Assista ao Mini Curso</h4>
+        <p>Assista ao nosso mini curso para começar a usar o ZapLite com eficiência.</p>
+      </div>
+      <div class="tutorial-box">
+        <h4>2º - Configure seu Prompt</h4>
+        <p>Escreva um prompt claro e eficiente para o melhor atendimento possível.</p>
+      </div>
+      <div class="tutorial-box">
+        <h4>3º - Baixe o Software</h4>
+        <p>Instale o software ZapLite em seu computador para iniciar as automações.</p>
+      </div>
+      <div class="tutorial-box">
+        <h4>4º - Conecte o QR Code</h4>
+        <p>Use o QR code gerado para conectar seu WhatsApp ao ZapLite.</p>
       </div>
     </div>
   </div>
@@ -292,85 +340,17 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
-      })
-      .then(response => response.json())
-      .then(data => {
+      }).then(response => response.json()).then(data => {
         if (data.success && data.active) {
           document.getElementById('loading').style.display = 'none';
           document.getElementById('dashboard-content').style.display = 'block';
           document.body.style.display = 'block';
 
-          fetch('/get-expiration-date', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.expirationDate) {
-              document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
-            }
-          });
-
+          // Exibir nome do usuário
           document.getElementById('user-name').textContent = data.name;
 
-          fetch('/get-prompt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success && data.prompt) {
-              document.getElementById('prompt').value = data.prompt;
-            }
-          });
-
-        } else {
-          window.location.href = '/index.html';
+          // Exibir data de vencimento e outras lógicas do prompt, etc.
         }
-      });
-
-      const savePromptButton = document.getElementById('save-prompt');
-      savePromptButton.addEventListener('click', () => {
-        const prompt = document.getElementById('prompt').value;
-        fetch('/set-prompt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, prompt })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert('Prompt salvo com sucesso!');
-          } else {
-            alert('Falha ao salvar o Prompt');
-          }
-        });
-      });
-
-      const toggleButton = document.getElementById('header-toggle');
-      const navBar = document.getElementById('nav-bar');
-      const bodyPd = document.body;
-
-      toggleButton.addEventListener('click', () => {
-        navBar.classList.toggle('show');
-        toggleButton.classList.toggle('bx-x');
-        toggleButton.classList.toggle('bx-menu');
-
-        if (window.innerWidth > 768) {
-          bodyPd.classList.toggle('body-pd');
-        }
-      });
-
-      if (window.innerWidth > 768) {
-        navBar.classList.add('show');
-        bodyPd.classList.add('body-pd');
-      }
-
-      document.querySelector('.nav_link[href="index.html"]').addEventListener('click', function() {
-        localStorage.clear();
-        window.location.href = '/index.html';
       });
     });
   </script>
