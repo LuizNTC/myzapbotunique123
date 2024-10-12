@@ -276,7 +276,7 @@
 
   <div class="main-container">
     <div class="welcome-message">
-      <h2>Boas-vindas, Usuário!</h2>
+      <h2>Boas-vindas, <span id="user-name">Usuário</span>!</h2>
     </div>
 
     <div class="prompt-container">
@@ -329,6 +329,27 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <script>
+    // Função de toggle para o menu lateral
+    const toggleButton = document.getElementById('header-toggle');
+    const navBar = document.getElementById('nav-bar');
+    const bodyPd = document.body;
+
+    toggleButton.addEventListener('click', () => {
+      navBar.classList.toggle('show');
+      toggleButton.classList.toggle('bx-x');
+      toggleButton.classList.toggle('bx-menu');
+
+      if (window.innerWidth > 768) {
+        bodyPd.classList.toggle('body-pd');
+      }
+    });
+
+    if (window.innerWidth > 768) {
+      navBar.classList.add('show');
+      bodyPd.classList.add('body-pd');
+    }
+
+    // Autenticação e exibição do nome do usuário
     document.addEventListener("DOMContentLoaded", function(event) {
       const userId = localStorage.getItem('userId');
       if (!userId) {
@@ -342,14 +363,13 @@
         body: JSON.stringify({ userId })
       }).then(response => response.json()).then(data => {
         if (data.success && data.active) {
-          document.getElementById('loading').style.display = 'none';
-          document.getElementById('dashboard-content').style.display = 'block';
           document.body.style.display = 'block';
-
           // Exibir nome do usuário
           document.getElementById('user-name').textContent = data.name;
-
-          // Exibir data de vencimento e outras lógicas do prompt, etc.
+          // Exibir data de vencimento
+          document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
+        } else {
+          window.location.href = '/index.html';
         }
       });
     });
