@@ -358,34 +358,40 @@
       }
 
       // Buscar todas as informações do usuário
-      fetch('/get-user-info', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Exibir o nome do usuário
-          document.getElementById('user-name').textContent = data.user.name;
+  fetch('/get-user-info', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data); // Adiciona o log para verificar a resposta
 
-          // Exibir a data de expiração
-          const expirationDate = new Date(data.user.expiration_date);
-          if (!isNaN(expirationDate)) {
-            document.getElementById('expiration-date').textContent = expirationDate.toLocaleDateString();
-          }
+    if (data.success) {
+      // Exibir o nome do usuário
+      document.getElementById('user-name').textContent = data.user.name;
 
-          // Exibir o prompt do usuário
-          document.getElementById('prompt').value = data.user.prompt;
-        } else {
-          window.location.href = '/index.html'; // Redireciona para login se houver erro
-        }
-      })
-      .catch(error => {
-        console.error('Erro ao carregar informações do usuário:', error);
-        window.location.href = '/index.html'; // Redireciona para login em caso de erro
-      });
-    });
+      // Exibir a data de expiração
+      const expirationDate = new Date(data.user.expiration_date);
+      if (!isNaN(expirationDate)) {
+        document.getElementById('expiration-date').textContent = expirationDate.toLocaleDateString();
+      }
+
+      // Exibir o prompt do usuário
+      if (data.user.prompt) {
+        document.getElementById('prompt').value = data.user.prompt;
+      } else {
+        document.getElementById('prompt').value = "Prompt não encontrado";
+      }
+    } else {
+      window.location.href = '/index.html'; // Redireciona para login se houver erro
+    }
+  })
+  .catch(error => {
+    console.error('Erro ao carregar informações do usuário:', error);
+    window.location.href = '/index.html'; // Redireciona para login em caso de erro
+  });
+});
   </script>
 </body>
 </html>
