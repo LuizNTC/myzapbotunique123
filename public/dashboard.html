@@ -283,7 +283,7 @@
       <div class="form-group">
         <label for="prompt">Prompt:</label>
         <textarea class="form-control" id="prompt" rows="10" placeholder="Descreva o seu negócio aqui..."></textarea>
-        <button id="save-prompt" class="btn btn-success" i class='bx bxs-download'>Salvar Prompt</button>
+        <button id="save-prompt" class="btn btn-success">Salvar Prompt</button>
       </div>
 
       <div class="control-container">
@@ -329,48 +329,40 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <script>
-    // Função de toggle para o menu lateral
-    const toggleButton = document.getElementById('header-toggle');
-    const navBar = document.getElementById('nav-bar');
-    const bodyPd = document.body;
-
-    toggleButton.addEventListener('click', () => {
-      navBar.classList.toggle('show');
-      toggleButton.classList.toggle('bx-x');
-      toggleButton.classList.toggle('bx-menu');
-
-      if (window.innerWidth > 768) {
-        bodyPd.classList.toggle('body-pd');
-      }
-    });
-
-    if (window.innerWidth > 768) {
-      navBar.classList.add('show');
-      bodyPd.classList.add('body-pd');
-    }
-
-    // Autenticação e exibição do nome do usuário
-    document.addEventListener("DOMContentLoaded", function(event) {
+    document.addEventListener("DOMContentLoaded", function() {
       const userId = localStorage.getItem('userId');
       if (!userId) {
-        window.location.href = '/index.html';
+        window.location.href = '/index.html'; // Redireciona para login se não estiver logado
         return;
       }
 
-      fetch('/verify-subscription', {
+      // Buscar todas as informações do usuário
+      fetch('/get-user-info', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
-      }).then(response => response.json()).then(data => {
-        if (data.success && data.active) {
-          document.body.style.display = 'block';
-          // Exibir nome do usuário
-          document.getElementById('user-name').textContent = data.name;
-          // Exibir data de vencimento
-          document.getElementById('expiration-date').textContent = new Date(data.expirationDate).toLocaleDateString();
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Exibir o nome do usuário
+          document.getElementById('user-name').textContent = data.user.name;
+
+          // Exibir a data de expiração
+          const expirationDate = new Date(data.user.expiration_date);
+          if (!isNaN(expirationDate)) {
+            document.getElementById('expiration-date').textContent = expirationDate.toLocaleDateString();
+          }
+
+          // Exibir o prompt do usuário
+          document.getElementById('prompt').value = data.user.prompt;
         } else {
-          window.location.href = '/index.html';
+          window.location.href = '/index.html'; // Redireciona para login se houver erro
         }
+      })
+      .catch(error => {
+        console.error('Erro ao carregar informações do usuário:', error);
+        window.location.href = '/index.html'; // Redireciona para login em caso de erro
       });
     });
   </script>
