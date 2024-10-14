@@ -140,17 +140,22 @@ app.post('/get-user-info', async (req, res) => {
   const client = await pool.connect();
 
   try {
-      const result = await client.query('SELECT name, username, phone, email FROM users WHERE id = $1', [userId]);
-      if (result.rows.length === 0) {
-          return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
-      }
-      const user = result.rows[0];
-      res.status(200).json({ success: true, user });
+    // Certifique-se de que a consulta busca o campo `prompt`
+    const result = await client.query('SELECT name, username, phone, email, prompt FROM users WHERE id = $1', [userId]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+    }
+    
+    const user = result.rows[0];
+    
+    // Inclua o `prompt` no objeto de retorno
+    res.status(200).json({ success: true, user });
   } catch (err) {
-      console.error('Erro ao obter informações do usuário:', err);
-      res.status(500).json({ success: false, message: 'Erro ao obter informações do usuário' });
+    console.error('Erro ao obter informações do usuário:', err);
+    res.status(500).json({ success: false, message: 'Erro ao obter informações do usuário' });
   } finally {
-      client.release();
+    client.release();
   }
 });
 
