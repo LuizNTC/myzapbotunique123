@@ -329,10 +329,31 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    // Função de toggle para o menu lateral
+    const toggleButton = document.getElementById('header-toggle');
+    const navBar = document.getElementById('nav-bar');
+    const bodyPd = document.body;
+
+    toggleButton.addEventListener('click', () => {
+      navBar.classList.toggle('show');
+      toggleButton.classList.toggle('bx-x');
+      toggleButton.classList.toggle('bx-menu');
+
+      if (window.innerWidth > 768) {
+        bodyPd.classList.toggle('body-pd');
+      }
+    });
+
+    if (window.innerWidth > 768) {
+      navBar.classList.add('show');
+      bodyPd.classList.add('body-pd');
+    }
+
+    // Autenticação e exibição do nome do usuário
+    document.addEventListener("DOMContentLoaded", function(event) {
       const userId = localStorage.getItem('userId');
       if (!userId) {
-        window.location.href = '/index.html'; // Redireciona para login se não estiver logado
+        window.location.href = '/index.html';
         return;
       }
 
