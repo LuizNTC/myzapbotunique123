@@ -135,6 +135,45 @@ const sendEmail = (to, subject, userName) => {
   });
 };
 
+// PAGINA ADMIN
+// PAGINA ADMIN
+// PAGINA ADMIN
+// PAGINA ADMIN
+const adminAuth = (req, res, next) => {
+  const { email, password } = req.body;
+  
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@zaplite.com.br';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'adminzaplite12345';
+
+  if (email === adminEmail && password === adminPassword) {
+    next();
+  } else {
+    res.status(401).json({ success: false, message: 'Credenciais inválidas' });
+  }
+};
+// Rota para exibir a página admin
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Rota para buscar dados dos usuários
+app.post('/admin/get-users', adminAuth, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT id, username, email, subscription_status, expiration_date FROM users');
+    res.json({ success: true, users: result.rows });
+  } catch (err) {
+    console.error('Erro ao buscar usuários:', err);
+    res.status(500).json({ success: false, message: 'Erro ao buscar dados' });
+  } finally {
+    client.release();
+  }
+});
+// FINAL PAGINA ADMIN
+// FINAL PAGINA ADMIN
+// FINAL PAGINA ADMIN
+
+
 app.post('/get-user-info', async (req, res) => {
   const { userId } = req.body;
   const client = await pool.connect();
@@ -210,15 +249,15 @@ app.post('/create-checkout-session', async (req, res) => {
           expirationDate.setMonth(expirationDate.getMonth() + 1);
           break;
         case 'quarterly':
-          price = 197.90;  // Alterado para R$197,90
+          price = 131.90;  // Alterado para R$197,90
           expirationDate.setMonth(expirationDate.getMonth() + 3);
           break;
         case 'semiannually':
-          price = 373.80;  // Alterado para R$373,80
+          price = 237.90;  // Alterado para R$373,80
           expirationDate.setMonth(expirationDate.getMonth() + 6);
           break;
         case 'annually':
-          price = 670.80;  // Alterado para R$670,80
+          price = 417.90;  // Alterado para R$670,80
           expirationDate.setFullYear(expirationDate.getFullYear() + 1);
           break;
         default:
@@ -281,15 +320,15 @@ app.post('/create-checkout-session', async (req, res) => {
           expirationDate.setMonth(expirationDate.getMonth() + 1);
           break;
         case 'quarterly':
-          price = 197.90;  // Alterado para R$197,90
+          price = 131.90;  // Alterado para R$197,90
           expirationDate.setMonth(expirationDate.getMonth() + 3);
           break;
         case 'semiannually':
-          price = 373.80;  // Alterado para R$373,80
+          price = 237.90;  // Alterado para R$373,80
           expirationDate.setMonth(expirationDate.getMonth() + 6);
           break;
         case 'annually':
-          price = 670.80;  // Alterado para R$670,80
+          price = 417.90;  // Alterado para R$670,80
           expirationDate.setFullYear(expirationDate.getFullYear() + 1);
           break;
         default:
@@ -353,23 +392,23 @@ app.post('/create-renewal-checkout-session', async (req, res) => {
       let expirationDate = new Date();
       switch (plan) {
         case 'monthly':
-          price = 29.90;
+          price = 49.90;
           expirationDate.setMonth(expirationDate.getMonth() + 1);
           break;
         case 'quarterly':
-          price = 79.90;
+          price = 131.90;
           expirationDate.setMonth(expirationDate.getMonth() + 3);
           break;
         case 'semiannually':
-          price = 149.90;
+          price = 237.90;
           expirationDate.setMonth(expirationDate.getMonth() + 6);
           break;
         case 'annually':
-          price = 299.90;
+          price = 417.90;
           expirationDate.setFullYear(expirationDate.getFullYear() + 1);
           break;
         default:
-          price = 29.90;
+          price = 49.90;
           expirationDate.setMonth(expirationDate.getMonth() + 1);
       }
 
